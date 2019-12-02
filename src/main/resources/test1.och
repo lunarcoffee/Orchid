@@ -1,0 +1,14 @@
+var i: Number = 0;
+var j: Array<Number> = getNumArr();
+var s: String = "String";
+
+print("Orchid");
+print(s);
+
+func print(msg: String) {
+    js.console.log(msg);
+}
+
+func getNumArr(): Array<Number> {
+    return []Number{1, 2, 3};
+}

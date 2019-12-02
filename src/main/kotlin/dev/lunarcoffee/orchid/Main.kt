@@ -1,0 +1,18 @@
+package dev.lunarcoffee.orchid
+
+import dev.lunarcoffee.orchid.parser.lexer.OrchidLexer
+import dev.lunarcoffee.orchid.parser.lexer.OrchidToken
+import dev.lunarcoffee.orchid.util.exitWithMessage
+import java.io.File
+
+fun main(args: Array<String>) {
+    val input = args.firstOrNull() ?: exitWithMessage("Fatal: no input file specified!", 1)
+    val output = args.getOrNull(1) ?: exitWithMessage("Fatal: no output file specified!", 1)
+
+    val lexer = OrchidLexer(File(input))
+    var t = lexer.next()
+    while (t != OrchidToken.EOF) {
+        println(t)
+        t = lexer.next()
+    }
+}
