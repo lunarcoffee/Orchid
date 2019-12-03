@@ -4,4 +4,5 @@ interface Lexer {
     val chars: String
 
     fun next(): Token
+    fun peek(): Token
 }

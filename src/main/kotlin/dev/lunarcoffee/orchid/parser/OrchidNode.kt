@@ -1,22 +1,27 @@
 package dev.lunarcoffee.orchid.parser
 
 sealed class OrchidNode : Node {
+    class Program(val runnables: List<Statement>, val decls: List<TopLevelDecl>) : OrchidNode()
+
+    open class TopLevelDecl : OrchidNode()
+    class TopLevelVarDecl(val name: String, val value: Expression?, val type: String) :
+        TopLevelDecl()
+
     class FunctionDefinition<T>(
         val name: String,
-        val args: List<Expression<*>>,
+        val args: List<Expression>,
         val body: List<Statement>,
         val returnType: T
-    )
+    ) : TopLevelDecl()
 
     open class Statement : OrchidNode()
-    class VarDecl<T>(val name: String, val value: T) : Statement()
-    class Return<T>(val value: Expression<T>) : Statement()
+    class VarDecl(val name: String, val value: Expression?, val type: String) : Statement()
+    class Return(val value: Expression) : Statement()
 
-    open class Expression<T>(val value: T) : Statement()
-    class NumberLiteral(value: Double) : Expression<Double>(value)
-    class StringLiteral(value: String) : Expression<String>(value)
-    class ArrayLiteral<T : Expression<T>>(values: List<T>) : Expression<List<T>>(values)
-    class VarRef<T>(val name: String, value: T) : Expression<T>(value)
-    class FunctionCall<T>(val name: String, value: T, val args: List<Expression<*>>) :
-        Expression<T>(value)
+    open class Expression : Statement()
+    class NumberLiteral(val value: Double) : Expression()
+    class StringLiteral(val value: String) : Expression()
+    class ArrayLiteral(val values: List<Expression>, val type: String) : Expression()
+    class VarRef(val name: String) : Expression()
+    class FunctionCall(val name: String, val args: List<Expression>) : Expression()
 }

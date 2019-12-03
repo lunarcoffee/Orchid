@@ -1,7 +1,7 @@
 package dev.lunarcoffee.orchid.parser.lexer
 
 sealed class OrchidToken(private val repr: String) : Token {
-    class ID(val value: String) : OrchidToken(value)
+    open class ID(val value: String) : OrchidToken(value)
     class NumberLiteral(val value: Double) : OrchidToken(value.toString())
     class StringLiteral(val value: String) : OrchidToken(value)
 
@@ -19,6 +19,10 @@ sealed class OrchidToken(private val repr: String) : Token {
     object LAngle : OrchidToken("<")
     object RAngle : OrchidToken(">")
     object EOF : OrchidToken("<EOF>")
+
+    object KVar : ID("var")
+    object KFunc : ID("func")
+    object KReturn : ID("return")
 
     override fun toString() = repr
 }
