@@ -63,9 +63,10 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
             is OrchidToken.LBracket -> arrayLiteral()
             is OrchidToken.ID -> {
+                val name = scopedName(next.value)
                 when (lexer.peek()) {
-                    OrchidToken.LParen -> functionCall(next.value)
-                    else -> OrchidNode.VarRef(next.value)
+                    OrchidToken.LParen -> functionCall(name)
+                    else -> OrchidNode.VarRef(name)
                 }
             }
             else -> exitWithMessage("Syntax: expected number, string, identifier, or '['!", 2)
@@ -127,7 +128,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
     }
 
     // This actually only parses the arguments.
-    private fun functionCall(name: String): OrchidNode.FunctionCall {
+    private fun functionCall(name: OrchidNode.ScopedName): OrchidNode.FunctionCall {
         expectToken<OrchidToken.LParen>()
 
         var next = lexer.peek()
@@ -171,6 +172,21 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         }
 
         return OrchidNode.Type(baseType, typeParams.isNotEmpty(), typeParams.ifEmpty { null })
+    }
+
+    // This actually only parses the parts (if they exist) after the first section [base].
+    private fun scopedName(base: String): OrchidNode.ScopedName {
+        if (lexer.peek() != OrchidToken.Dot)
+            return OrchidNode.ScopedName(listOf(base))
+
+        val parts = mutableListOf(base)
+        var next = lexer.peek()
+        while (next == OrchidToken.Dot) {
+            lexer.next()
+            parts += expectToken<OrchidToken.ID>().value
+            next = lexer.peek()
+        }
+        return OrchidNode.ScopedName(parts)
     }
 
     // Try to get a token, exiting if the next token in the stream is not the type expected.

@@ -19,9 +19,10 @@ sealed class OrchidNode : Node {
     class NumberLiteral(val value: Double) : Expression()
     class StringLiteral(val value: String) : Expression()
     class ArrayLiteral(val values: List<Expression>, val type: Type) : Expression()
-    class VarRef(val name: String) : Expression()
-    class FunctionCall(val name: String, val args: List<Expression>) : Expression()
+    class VarRef(val name: ScopedName) : Expression()
+    class FunctionCall(val name: ScopedName, val args: List<Expression>) : Expression()
 
+    class ScopedName(val parts: List<String>) : OrchidNode()
     class Type(val name: String, val generic: Boolean = false, val params: List<Type>? = null) :
         OrchidNode()
 }
