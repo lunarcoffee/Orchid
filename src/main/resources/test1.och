@@ -5,8 +5,8 @@ var s: String = "String";
 print("Orchid");
 print(s);
 
-func print(msg: String): Void {
-    js.console.log(msg);
+func print(msg: Any): Void {
+    console.log(msg);
 }
 
 func getNumArr(): Array<Number> {

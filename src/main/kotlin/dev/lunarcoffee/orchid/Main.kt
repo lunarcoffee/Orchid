@@ -1,5 +1,6 @@
 package dev.lunarcoffee.orchid
 
+import dev.lunarcoffee.orchid.gen.OrchidGenerator
 import dev.lunarcoffee.orchid.parser.OrchidParser
 import dev.lunarcoffee.orchid.parser.lexer.OrchidLexer
 import dev.lunarcoffee.orchid.util.exitWithMessage
@@ -16,6 +17,6 @@ fun main(args: Array<String>) {
 //        t = lexer.next()
 //    }
     val parser = OrchidParser(lexer)
-    val tree = parser.getTree()
-    println()
+    val gen = OrchidGenerator(parser, File(output))
+    gen.gen()
 }

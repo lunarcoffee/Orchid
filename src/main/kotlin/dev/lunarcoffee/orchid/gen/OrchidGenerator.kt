@@ -1,0 +1,59 @@
+package dev.lunarcoffee.orchid.gen
+
+import dev.lunarcoffee.orchid.parser.OrchidNode
+import dev.lunarcoffee.orchid.parser.Parser
+import dev.lunarcoffee.orchid.util.exitWithMessage
+import java.io.File
+
+class OrchidGenerator(override val parser: Parser, override val output: File) : Generator {
+    private val tree = parser.getTree() as OrchidNode.Program
+
+    override fun gen() {
+        var text = ""
+        for (decl in tree.decls)
+            text += declaration(decl)
+        for (statement in tree.runnables)
+            text += statement(statement)
+        output.writeText(text)
+    }
+
+    private fun declaration(decl: OrchidNode.TopLevelDecl): String {
+        return when (decl) {
+            is OrchidNode.FunctionDefinition -> """
+                |function ${decl.name}(${decl.args.keys.joinToString(",")}) 
+                |{${decl.body.joinToString("") { statement(it) }}}
+            """
+            else -> exitWithMessage("Syntax: expected function definition!", 3)
+        }.trimMargin()
+    }
+
+    private fun statement(stmt: OrchidNode.Statement): String {
+        return when (stmt) {
+            is OrchidNode.VarDecl -> "var ${stmt.name}" +
+                    if (stmt.value != null) " = ${expression(stmt.value)}" else ""
+            is OrchidNode.Return -> "return ${expression(stmt.value)}"
+            is OrchidNode.Expression -> expression(stmt)
+            else -> exitWithMessage("Syntax: expected variable declaration or return!", 3)
+        } + ";"
+    }
+
+    private fun expression(expr: OrchidNode.Expression): String {
+        return when (expr) {
+            is OrchidNode.NumberLiteral -> expr.value.toString()
+            is OrchidNode.StringLiteral -> "\"${expr.value}\""
+            is OrchidNode.ArrayLiteral -> "[${joinExpr(expr.values)}]"
+            is OrchidNode.VarRef -> name(expr.name)
+            is OrchidNode.FunctionCall ->
+                "${name(expr.name)}(${joinExpr(expr.args)})"
+            else -> exitWithMessage(
+                "Syntax: expected number, string, array, variable, or function call!",
+                3
+            )
+        }
+    }
+
+    private fun name(name: OrchidNode.ScopedName) = name.parts.joinToString(".")
+    private fun joinExpr(items: List<OrchidNode.Expression>): String {
+        return items.joinToString(",") { expression(it) }
+    }
+}
