@@ -1,5 +1,6 @@
 package dev.lunarcoffee.orchid.gen
 
+import dev.lunarcoffee.orchid.gen.sem.OrchidSemanticAnalyzer
 import dev.lunarcoffee.orchid.parser.OrchidNode
 import dev.lunarcoffee.orchid.parser.Parser
 import dev.lunarcoffee.orchid.util.exitWithMessage
@@ -9,11 +10,14 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
     private val tree = parser.getTree() as OrchidNode.Program
 
     override fun gen() {
+        OrchidSemanticAnalyzer(tree).verify()
+
         var text = ""
         for (decl in tree.decls)
             text += declaration(decl)
         for (statement in tree.runnables)
             text += statement(statement)
+
         output.writeText(text)
     }
 

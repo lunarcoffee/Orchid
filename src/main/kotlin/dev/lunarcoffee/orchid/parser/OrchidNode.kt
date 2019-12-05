@@ -22,7 +22,10 @@ sealed class OrchidNode : Node {
     class VarRef(val name: ScopedName) : Expression()
     class FunctionCall(val name: ScopedName, val args: List<Expression>) : Expression()
 
-    class ScopedName(val parts: List<String>) : OrchidNode()
-    class Type(val name: String, val generic: Boolean = false, val params: List<Type>? = null) :
-        OrchidNode()
+    data class ScopedName(val parts: List<String>) : OrchidNode()
+    data class Type(
+        val name: String,
+        val generic: Boolean = false,
+        val params: List<Type>? = null
+    ) : OrchidNode()
 }
