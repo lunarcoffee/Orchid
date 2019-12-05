@@ -14,35 +14,48 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         while (next != OrchidToken.EOF) {
             when (next) {
-                OrchidToken.KVar -> decls += tlVariableDeclaration()
-                OrchidToken.KFunc -> TODO("function declaration")
-                else -> TODO("statement")
+                OrchidToken.KVar -> runnables += variableDeclaration()
+                OrchidToken.KFunc -> decls += functionDeclaration()
+                else -> runnables += statement()
             }
             next = lexer.peek()
         }
         return OrchidNode.Program(runnables, decls)
     }
 
-    private fun tlVariableDeclaration(): OrchidNode.TopLevelVarDecl {
-        expectToken<OrchidToken.KVar>()
+    private fun functionDeclaration(): OrchidNode.FunctionDefinition {
+        expectToken<OrchidToken.KFunc>()
         val name = expectToken<OrchidToken.ID>().value
-        expectToken<OrchidToken.Colon>()
-        val type = expectToken<OrchidToken.ID>().value
+        expectToken<OrchidToken.LParen>()
 
-        return when (lexer.next()) {
-            OrchidToken.Terminator -> OrchidNode.TopLevelVarDecl(name, null, type)
-            OrchidToken.Equals -> {
-                val value = expression()
-                expectToken<OrchidToken.Terminator>()
-                OrchidNode.TopLevelVarDecl(name, value, type)
-            }
-            else -> exitWithMessage("Syntax: expected ';' or '='!", 2)
+        var next = lexer.peek()
+        val args = mutableMapOf<String, OrchidNode.Type>()
+
+        while (next != OrchidToken.RParen) {
+            val paramName = expectToken<OrchidToken.ID>().value
+            expectToken<OrchidToken.Colon>()
+            args[paramName] = type()
+
+            if (lexer.peek() == OrchidToken.RParen)
+                break
+            next = lexer.peek()
         }
-    }
+        lexer.next()
+        expectToken<OrchidToken.Colon>()
 
-//    private fun <T> functionDeclaration(): OrchidNode.FunctionDefinition<T> {
-//
-//    }
+        val returnType = type()
+        expectToken<OrchidToken.LBrace>()
+
+        next = lexer.peek()
+        val body = mutableListOf<OrchidNode.Statement>()
+        while (next != OrchidToken.RBrace) {
+            body += statement()
+            next = lexer.peek()
+        }
+        lexer.next()
+
+        return OrchidNode.FunctionDefinition(name, args, body, returnType)
+    }
 
     private fun expression(): OrchidNode.Expression {
         return when (val next = lexer.next()) {
@@ -51,18 +64,47 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.LBracket -> arrayLiteral()
             is OrchidToken.ID -> {
                 when (lexer.peek()) {
-                    OrchidToken.Terminator -> OrchidNode.VarRef(next.value)
                     OrchidToken.LParen -> functionCall(next.value)
-                    else -> exitWithMessage("Syntax: expected ';' or '('!", 2)
+                    else -> OrchidNode.VarRef(next.value)
                 }
             }
             else -> exitWithMessage("Syntax: expected number, string, identifier, or '['!", 2)
         }
     }
 
+    private fun statement(): OrchidNode.Statement {
+        return when (lexer.peek()) {
+            is OrchidToken.KVar -> variableDeclaration()
+            is OrchidToken.KReturn -> returnStatement()
+            else -> expression().also { expectToken<OrchidToken.Terminator>() }
+        }
+    }
+
+    private fun variableDeclaration(): OrchidNode.VarDecl {
+        expectToken<OrchidToken.KVar>()
+        val name = expectToken<OrchidToken.ID>().value
+        expectToken<OrchidToken.Colon>()
+        val type = type()
+
+        return when (lexer.next()) {
+            OrchidToken.Terminator -> OrchidNode.VarDecl(name, null, type)
+            OrchidToken.Equals -> {
+                val value = expression()
+                expectToken<OrchidToken.Terminator>()
+                OrchidNode.VarDecl(name, value, type)
+            }
+            else -> exitWithMessage("Syntax: expected ';' or '='!", 2)
+        }
+    }
+
+    private fun returnStatement(): OrchidNode.Return {
+        expectToken<OrchidToken.KReturn>()
+        return OrchidNode.Return(expression()).also { expectToken<OrchidToken.Terminator>() }
+    }
+
     private fun arrayLiteral(): OrchidNode.ArrayLiteral {
         expectToken<OrchidToken.RBracket>()
-        val type = expectToken<OrchidToken.ID>().value
+        val type = type()
         expectToken<OrchidToken.LBrace>()
 
         var next = lexer.peek()
@@ -105,6 +147,30 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         expectToken<OrchidToken.RParen>()
         return OrchidNode.FunctionCall(name, args)
+    }
+
+    private fun type(): OrchidNode.Type {
+        val baseType = expectToken<OrchidToken.ID>().value
+        val typeParams = mutableListOf<OrchidNode.Type>()
+        var next = lexer.peek()
+
+        if (lexer.peek() is OrchidToken.LAngle) {
+            lexer.next()
+            while (next !is OrchidToken.RAngle) {
+                typeParams += type()
+
+                // Support optional trailing comma.
+                if (lexer.peek() == OrchidToken.RAngle) {
+                    lexer.next()
+                    return OrchidNode.Type(baseType, true, typeParams)
+                }
+                expectToken<OrchidToken.Comma>()
+                next = lexer.peek()
+            }
+            expectToken<OrchidToken.RAngle>()
+        }
+
+        return OrchidNode.Type(baseType, typeParams.isNotEmpty(), typeParams.ifEmpty { null })
     }
 
     // Try to get a token, exiting if the next token in the stream is not the type expected.
