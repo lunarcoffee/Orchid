@@ -7,7 +7,6 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     private val symbols = SymbolTable()
     private var scope = 0
 
-    // TODO: Expression type checking.
     override fun verify() {
         // Hoist all top-level declarations.
         for (decl in tree.decls)
@@ -28,7 +27,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         for ((name, type) in decl.args)
             symbols.addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
         for (statement in decl.body)
-            statement(statement)
+            statement(statement, if (statement is OrchidNode.Return) decl else null)
 
         // Remove function arguments from scope.
         scope--
@@ -38,21 +37,39 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         )
     }
 
-    private fun statement(stmt: OrchidNode.Statement) {
+    private fun statement(
+        stmt: OrchidNode.Statement,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
         when (stmt) {
             is OrchidNode.VarDecl -> variableDeclaration(stmt)
-            is OrchidNode.Return -> expression(stmt.value)
+            is OrchidNode.Return -> returnStatement(stmt, func!!)
             is OrchidNode.Expression -> expression(stmt)
         }
     }
 
     private fun variableDeclaration(stmt: OrchidNode.VarDecl) {
         // Check the initializer and type.
-        if (stmt.value != null)
+        if (stmt.value != null) {
             expression(stmt.value)
-        checkType(stmt.type)
 
+            // Check type of initializer expression and type of variable.
+            val exprType = getExprType(stmt.value)
+            if (exprType != stmt.type)
+                exitWithMessage("Semantic: can't assign '$exprType' to '${stmt.type}'!", 4)
+        }
+
+        checkType(stmt.type)
         symbols.addSymbol(OrchidSymbol.VarSymbol(stmt, scope))
+    }
+
+    private fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {
+        expression(stmt.value)
+
+        // Check that the return expression type matches the function's return type.
+        val exprType = getExprType(stmt.value)
+        if (exprType != func.returnType)
+            exitWithMessage("Semantic: can't return '$exprType' as '${func.returnType}'!", 4)
     }
 
     private fun expression(expr: OrchidNode.Expression) {
@@ -65,9 +82,15 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {
-        checkType(array.type)
-        for (element in array.values)
+        checkType(array.type!!)
+
+        // Check validity of each element and verify that each is the same type as the array.
+        for (element in array.values) {
             expression(element)
+            val exprType = getExprType(element)
+            if (exprType != array.type.params!![0])
+                exitWithMessage("Semantic: '${array.type}' cannot contain '$exprType'!", 4)
+        }
     }
 
     private fun functionCall(expr: OrchidNode.FunctionCall) {
@@ -100,5 +123,13 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         if (!symbols.isDefined(type.name))
             exitWithMessage("Semantic: type '${type.name}' is not defined!", 4)
         type.params?.forEach { checkType(it) }
+    }
+
+    private fun getExprType(expr: OrchidNode.Expression): OrchidNode.Type {
+        return expr.type ?: when (expr) {
+            is OrchidNode.VarRef -> symbols[expr.name]?.type
+            is OrchidNode.FunctionCall -> symbols[expr.name]?.type
+            else -> exitWithMessage("Semantic: unexpected expression!", 4)
+        }!!
     }
 }
