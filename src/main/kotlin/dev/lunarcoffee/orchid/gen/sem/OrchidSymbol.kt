@@ -4,14 +4,25 @@ import dev.lunarcoffee.orchid.parser.OrchidNode
 
 sealed class OrchidSymbol(
     override val name: OrchidNode.ScopedName,
-    override val type: OrchidNode.Type?
+    override val type: OrchidNode.Type?,
+    override val scope: Int
 ) : Symbol {
 
-    constructor(name: String) : this(OrchidNode.ScopedName(listOf(name)), null)
+    constructor(name: String, scope: Int) : this(OrchidNode.ScopedName(listOf(name)), null, scope)
 
+    class VarSymbol(variable: OrchidNode.VarDecl, scope: Int) :
+        OrchidSymbol(OrchidNode.ScopedName(variable.name), variable.type, scope)
 
+    class FuncSymbol(
+        call: OrchidNode.FunctionDefinition,
+        val args: List<OrchidNode.Type>,
+        scope: Int
+    ) : OrchidSymbol(OrchidNode.ScopedName(call.name), call.returnType, scope)
 
-    object NumberType : OrchidSymbol("Number")
-    object StringType : OrchidSymbol("String")
-    object VoidType : OrchidSymbol("Void")
+    open class BuiltinSymbol(name: String) : OrchidSymbol(name, 0)
+    object NumberType : BuiltinSymbol("Number")
+    object StringType : BuiltinSymbol("String")
+    object ArrayType : BuiltinSymbol("Array")
+    object AnyType : BuiltinSymbol("Any")
+    object VoidType : BuiltinSymbol("Void")
 }

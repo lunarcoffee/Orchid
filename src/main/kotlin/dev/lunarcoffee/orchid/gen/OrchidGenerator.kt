@@ -46,9 +46,9 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.NumberLiteral -> expr.value.toString()
             is OrchidNode.StringLiteral -> "\"${expr.value}\""
             is OrchidNode.ArrayLiteral -> "[${joinExpr(expr.values)}]"
-            is OrchidNode.VarRef -> name(expr.name)
+            is OrchidNode.VarRef -> expr.name.toString()
             is OrchidNode.FunctionCall ->
-                "${name(expr.name)}(${joinExpr(expr.args)})"
+                "${expr.name}(${joinExpr(expr.args)})"
             else -> exitWithMessage(
                 "Syntax: expected number, string, array, variable, or function call!",
                 3
@@ -56,7 +56,6 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
         }
     }
 
-    private fun name(name: OrchidNode.ScopedName) = name.parts.joinToString(".")
     private fun joinExpr(items: List<OrchidNode.Expression>): String {
         return items.joinToString(",") { expression(it) }
     }

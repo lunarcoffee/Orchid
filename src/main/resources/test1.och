@@ -6,7 +6,7 @@ print("Orchid");
 print(s);
 
 func print(msg: Any): Void {
-    console.log(msg);
+    js.console.log(msg);
 }
 
 func getNumArr(): Array<Number> {

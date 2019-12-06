@@ -38,6 +38,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
             if (lexer.peek() == OrchidToken.RParen)
                 break
+            expectToken<OrchidToken.Comma>()
             next = lexer.peek()
         }
         lexer.next()
@@ -151,7 +152,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
     }
 
     private fun type(): OrchidNode.Type {
-        val baseType = expectToken<OrchidToken.ID>().value
+        val baseType = scopedName(expectToken<OrchidToken.ID>().value)
         val typeParams = mutableListOf<OrchidNode.Type>()
         var next = lexer.peek()
 
