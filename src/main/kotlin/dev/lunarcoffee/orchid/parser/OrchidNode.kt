@@ -28,6 +28,7 @@ sealed class OrchidNode : Node {
         val params: List<Type>? = null
     ) : OrchidNode()
 
+    // Scoped name like "console.log".
     data class ScopedName(val parts: List<String>) : OrchidNode() {
         constructor(name: String) : this(listOf(name))
 

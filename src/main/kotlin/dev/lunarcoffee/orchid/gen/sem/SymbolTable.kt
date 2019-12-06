@@ -18,9 +18,12 @@ class SymbolTable : MutableMap<OrchidNode.ScopedName, Symbol> by mutableMapOf() 
     fun isDefined(name: OrchidNode.ScopedName) = get(name) != null
 
     fun removeOutOfScope(scope: Int) {
+        val toRemove = mutableListOf<OrchidNode.ScopedName>()
         for ((name, symbol) in this)
             if (symbol.scope > scope)
-                remove(name)
+                toRemove += name
+        for (name in toRemove)
+            remove(name)
     }
 
     companion object {

@@ -9,12 +9,10 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     // TODO: Expression type checking.
     override fun verify() {
-        for (decl in tree.decls) {
-            // Hoist all top-level function declarations.
-            when (decl) {
-                is OrchidNode.FunctionDefinition -> functionDefinition(decl)
-            }
-        }
+        // Hoist all top-level declarations.
+        for (decl in tree.decls)
+            if (decl is OrchidNode.FunctionDefinition)
+                functionDefinition(decl)
         for (runnable in tree.runnables)
             statement(runnable)
     }
@@ -27,11 +25,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
         // Put function arguments in scope before checking semantics of body.
         scope++
-        for ((name, type) in decl.args) {
-            symbols.addSymbol(
-                OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope)
-            )
-        }
+        for ((name, type) in decl.args)
+            symbols.addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
         for (statement in decl.body)
             statement(statement)
 
@@ -62,11 +57,17 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     private fun expression(expr: OrchidNode.Expression) {
         when (expr) {
-            // TODO: Array literal.
+            is OrchidNode.ArrayLiteral -> arrayLiteral(expr)
             is OrchidNode.VarRef -> if (!symbols.isDefined(expr.name))
                 exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
             is OrchidNode.FunctionCall -> functionCall(expr)
         }
+    }
+
+    private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {
+        checkType(array.type)
+        for (element in array.values)
+            expression(element)
     }
 
     private fun functionCall(expr: OrchidNode.FunctionCall) {
@@ -95,10 +96,9 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     // Recursively validate existence of a type and its generic type parameters.
     private fun checkType(type: OrchidNode.Type) {
+        // TODO: Check expected type parameter list size.
         if (!symbols.isDefined(type.name))
             exitWithMessage("Semantic: type '${type.name}' is not defined!", 4)
-        if (type.params != null)
-            for (param in type.params)
-                checkType(param)
+        type.params?.forEach { checkType(it) }
     }
 }

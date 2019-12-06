@@ -10,6 +10,7 @@ func print(msg: Any): Void {
 }
 
 func getNumArr(): Array<Number> {
-    var arr: Array<Number> = []Number{1, 2, 3};
+    var number: Number = 1;
+    var arr: Array<Number> = []Number{number, 2, 3};
     return arr;
 }
