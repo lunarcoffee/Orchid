@@ -67,11 +67,40 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 val name = scopedName(next.value)
                 when (lexer.peek()) {
                     OrchidToken.LParen -> functionCall(name)
+                    OrchidToken.Equals -> assignment(name)
                     else -> OrchidNode.VarRef(name)
                 }
             }
             else -> exitWithMessage("Syntax: expected number, string, identifier, or '['!", 2)
         }
+    }
+
+    // This actually only parses the arguments.
+    private fun functionCall(name: OrchidNode.ScopedName): OrchidNode.FunctionCall {
+        expectToken<OrchidToken.LParen>()
+
+        var next = lexer.peek()
+        val args = mutableListOf<OrchidNode.Expression>()
+
+        while (next != OrchidToken.RParen) {
+            args += expression()
+
+            // Support optional trailing comma.
+            if (lexer.peek() == OrchidToken.RParen) {
+                lexer.next()
+                return OrchidNode.FunctionCall(name, args)
+            }
+            expectToken<OrchidToken.Comma>()
+            next = lexer.peek()
+        }
+
+        expectToken<OrchidToken.RParen>()
+        return OrchidNode.FunctionCall(name, args)
+    }
+
+    private fun assignment(name: OrchidNode.ScopedName): OrchidNode.Assignment {
+        expectToken<OrchidToken.Equals>()
+        return OrchidNode.Assignment(name, expression())
     }
 
     private fun statement(): OrchidNode.Statement {
@@ -126,29 +155,6 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         expectToken<OrchidToken.RBrace>()
         return OrchidNode.ArrayLiteral(values, type)
-    }
-
-    // This actually only parses the arguments.
-    private fun functionCall(name: OrchidNode.ScopedName): OrchidNode.FunctionCall {
-        expectToken<OrchidToken.LParen>()
-
-        var next = lexer.peek()
-        val args = mutableListOf<OrchidNode.Expression>()
-
-        while (next != OrchidToken.RParen) {
-            args += expression()
-
-            // Support optional trailing comma.
-            if (lexer.peek() == OrchidToken.RParen) {
-                lexer.next()
-                return OrchidNode.FunctionCall(name, args)
-            }
-            expectToken<OrchidToken.Comma>()
-            next = lexer.peek()
-        }
-
-        expectToken<OrchidToken.RParen>()
-        return OrchidNode.FunctionCall(name, args)
     }
 
     private fun type(): OrchidNode.Type {

@@ -24,6 +24,7 @@ sealed class OrchidNode : Node {
         Expression(Type(ScopedName(listOf("Array")), true, listOf(type)))
 
     class VarRef(val name: ScopedName) : Expression(null)
+    class Assignment(val name: ScopedName, val value: Expression) : Expression(null)
     class FunctionCall(val name: ScopedName, val args: List<Expression>) : Expression(null)
 
     // Optionally generic type.

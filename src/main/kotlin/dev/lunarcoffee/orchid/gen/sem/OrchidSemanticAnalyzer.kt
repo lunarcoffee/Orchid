@@ -77,6 +77,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.ArrayLiteral -> arrayLiteral(expr)
             is OrchidNode.VarRef -> if (!symbols.isDefined(expr.name))
                 exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
+            is OrchidNode.Assignment -> assignment(expr)
             is OrchidNode.FunctionCall -> functionCall(expr)
         }
     }
@@ -91,6 +92,19 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             if (exprType != array.type.params!![0])
                 exitWithMessage("Semantic: '${array.type}' cannot contain '$exprType'!", 4)
         }
+    }
+
+    private fun assignment(expr: OrchidNode.Assignment) {
+        if (!symbols.isDefined(expr.name))
+            exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
+
+        // Compare types of the expression to assign and the entity to assign.
+        val symbol = symbols[expr.name]!!
+        val exprType = getExprType(expr.value)
+        if (exprType != symbol.type)
+            exitWithMessage("Semantic: can't assign '$exprType' to '${symbol.type}'!", 4)
+
+        expression(expr.value)
     }
 
     private fun functionCall(expr: OrchidNode.FunctionCall) {
@@ -119,7 +133,6 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     // Recursively validate existence of a type and its generic type parameters.
     private fun checkType(type: OrchidNode.Type) {
-        // TODO: Check expected type parameter list size.
         if (!symbols.isDefined(type.name))
             exitWithMessage("Semantic: type '${type.name}' is not defined!", 4)
         type.params?.forEach { checkType(it) }
