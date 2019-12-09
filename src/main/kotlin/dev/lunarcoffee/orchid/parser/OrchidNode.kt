@@ -25,14 +25,17 @@ sealed class OrchidNode : Node {
     // [type] used in semantic analysis, if null it can be determined from the symbol table.
     open class Expression(val type: Type?) : Statement()
 
-    class NumberLiteral(val value: Double) : Expression(Type(ScopedName(listOf("Number"))))
-    class StringLiteral(val value: String) : Expression(Type(ScopedName(listOf("String"))))
+    class NumberLiteral(val value: Double) : Expression(Type.number)
+    class StringLiteral(val value: String) : Expression(Type.string)
     class ArrayLiteral(val values: List<Expression>, type: Type) :
         Expression(Type(ScopedName(listOf("Array")), true, listOf(type)))
 
     class VarRef(val name: ScopedName) : Expression(null)
     class Assignment(val name: ScopedName, val value: Expression) : Expression(null)
     class FunctionCall(val name: ScopedName, val args: List<Expression>) : Expression(null)
+
+    object BoolTrue : Expression(Type.boolean)
+    object BoolFalse : Expression(Type.boolean)
 
     // [repr] is used during code generation to output the correct operator.
     open class BinOp(val left: Expression, val right: Expression, val repr: String) :
@@ -57,6 +60,12 @@ sealed class OrchidNode : Node {
     ) : OrchidNode() {
 
         override fun toString() = "$name" + if (generic) "<${params!!.joinToString(", ")}>" else ""
+
+        companion object {
+            val number = Type(ScopedName(listOf("Number")))
+            val string = Type(ScopedName(listOf("String")))
+            val boolean = Type(ScopedName(listOf("Boolean")))
+        }
     }
 
     // Scoped name like "console.log".

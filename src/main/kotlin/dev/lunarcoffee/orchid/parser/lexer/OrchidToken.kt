@@ -35,6 +35,8 @@ sealed class OrchidToken(private val repr: String) : Token {
     object KReturn : ID("return")
     object KIf : ID("if")
     object KElse : ID("else")
+    object KTrue : ID("true")
+    object KFalse : ID("false")
 
     override fun toString() = repr
 }

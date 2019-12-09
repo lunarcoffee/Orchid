@@ -86,6 +86,8 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
             is OrchidToken.NumberLiteral -> OrchidNode.NumberLiteral(next.value)
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
+            is OrchidToken.KTrue -> OrchidNode.BoolTrue
+            is OrchidToken.KFalse -> OrchidNode.BoolFalse
             is OrchidToken.LBracket -> arrayLiteral()
             is OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
             is OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())

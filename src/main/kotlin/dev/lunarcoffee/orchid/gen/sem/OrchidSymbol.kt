@@ -22,6 +22,7 @@ sealed class OrchidSymbol(
     open class BuiltinSymbol(name: String) : OrchidSymbol(name, 0)
     object NumberType : BuiltinSymbol("Number")
     object StringType : BuiltinSymbol("String")
+    object BooleanType : BuiltinSymbol("Boolean")
     object ArrayType : BuiltinSymbol("Array")
     object AnyType : BuiltinSymbol("Any")
     object VoidType : BuiltinSymbol("Void")

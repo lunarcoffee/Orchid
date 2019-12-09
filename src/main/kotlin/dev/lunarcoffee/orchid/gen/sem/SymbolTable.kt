@@ -30,6 +30,7 @@ class SymbolTable : MutableMap<OrchidNode.ScopedName, Symbol> by mutableMapOf() 
         private val builtins = listOf(
             OrchidSymbol.NumberType,
             OrchidSymbol.StringType,
+            OrchidSymbol.BooleanType,
             OrchidSymbol.ArrayType,
             OrchidSymbol.AnyType,
             OrchidSymbol.VoidType

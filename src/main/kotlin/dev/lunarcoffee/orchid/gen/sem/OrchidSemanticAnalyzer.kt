@@ -102,8 +102,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         func: OrchidNode.FunctionDefinition? = null
     ) {
         expression(stmt.condition)
-//        if (getExprType(stmt.condition) == Boolean)
-//            exitWithMessage("Semantic: if statement can only contain a 'Boolean' condition!", 4)
+        if (getExprType(stmt.condition) != OrchidNode.Type.boolean)
+            exitWithMessage("Semantic: if statement can only contain a 'Boolean' condition!", 4)
 
         statement(stmt.body, func)
         if (stmt.elseStmt != null)

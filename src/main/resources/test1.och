@@ -29,8 +29,11 @@ func getNumArr(): Array<Number> {
     return arr;
 }
 
-if (m + 2)
+var b: Boolean = false;
+if (b)
     print("hi");
+else if (true)
+    print("bye");
 else {
     var a: Number = 1;
     print(a);

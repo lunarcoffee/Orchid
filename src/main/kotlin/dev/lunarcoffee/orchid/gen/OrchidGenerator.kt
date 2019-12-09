@@ -50,6 +50,8 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.NumberLiteral -> expr.value.toString()
             is OrchidNode.StringLiteral -> "\"${expr.value}\""
             is OrchidNode.ArrayLiteral -> "[${joinExpr(expr.values)}]"
+            is OrchidNode.BoolTrue -> "true"
+            is OrchidNode.BoolFalse -> "false"
             is OrchidNode.VarRef -> expr.name.toString()
             is OrchidNode.BinOp ->
                 "(${expression(expr.left)} ${expr.repr} ${expression(expr.right)})"

@@ -101,7 +101,9 @@ class OrchidLexer(file: File) : Lexer {
             "func" to OrchidToken.KFunc,
             "return" to OrchidToken.KReturn,
             "if" to OrchidToken.KIf,
-            "else" to OrchidToken.KElse
+            "else" to OrchidToken.KElse,
+            "true" to OrchidToken.KTrue,
+            "false" to OrchidToken.KFalse
         )
     }
 }
