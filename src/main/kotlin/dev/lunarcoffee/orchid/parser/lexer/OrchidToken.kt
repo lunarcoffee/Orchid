@@ -22,6 +22,7 @@ sealed class OrchidToken(private val repr: String) : Token {
 
     // [right] determines right-associativity (i.e. exponentiation).
     open class Operator(repr: String, val precedence: Int, val right: Boolean) : OrchidToken(repr)
+
     object Plus : Operator("+", 1, false)
     object Dash : Operator("-", 1, false)
     object Asterisk : Operator("*", 2, false)
@@ -32,6 +33,8 @@ sealed class OrchidToken(private val repr: String) : Token {
     object KVar : ID("var")
     object KFunc : ID("func")
     object KReturn : ID("return")
+    object KIf : ID("if")
+    object KElse : ID("else")
 
     override fun toString() = repr
 }

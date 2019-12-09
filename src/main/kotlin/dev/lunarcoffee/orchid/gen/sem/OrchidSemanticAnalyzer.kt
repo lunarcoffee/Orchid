@@ -45,6 +45,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.VarDecl -> variableDeclaration(stmt)
             is OrchidNode.Return -> returnStatement(stmt, func!!)
             is OrchidNode.Expression -> expression(stmt)
+            is OrchidNode.Scope -> scope(stmt, func)
+            is OrchidNode.IfStatement -> ifStatement(stmt, func)
         }
     }
 
@@ -85,6 +87,27 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             }
             is OrchidNode.UnaryOp -> expression(expr.operand)
         }
+    }
+
+    private fun scope(stmt: OrchidNode.Scope, func: OrchidNode.FunctionDefinition? = null) {
+        scope++
+        for (statement in stmt.body)
+            statement(statement, func)
+        scope--
+        symbols.removeOutOfScope(scope)
+    }
+
+    private fun ifStatement(
+        stmt: OrchidNode.IfStatement,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
+        expression(stmt.condition)
+//        if (getExprType(stmt.condition) == Boolean)
+//            exitWithMessage("Semantic: if statement can only contain a 'Boolean' condition!", 4)
+
+        statement(stmt.body, func)
+        if (stmt.elseStmt != null)
+            statement(stmt.elseStmt, func)
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {

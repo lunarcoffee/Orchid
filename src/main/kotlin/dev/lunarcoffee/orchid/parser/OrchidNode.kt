@@ -12,8 +12,15 @@ sealed class OrchidNode : Node {
     ) : TopLevelDecl()
 
     open class Statement : OrchidNode()
+
+    class Scope(val body: List<Statement>) : Statement()
     class VarDecl(val name: String, val value: Expression?, val type: Type) : Statement()
     class Return(val value: Expression) : Statement()
+    class IfStatement(
+        val condition: Expression,
+        val body: Statement,
+        val elseStmt: Statement?
+    ) : Statement()
 
     // [type] used in semantic analysis, if null it can be determined from the symbol table.
     open class Expression(val type: Type?) : Statement()

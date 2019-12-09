@@ -99,7 +99,9 @@ class OrchidLexer(file: File) : Lexer {
         private val keywords = mapOf(
             "var" to OrchidToken.KVar,
             "func" to OrchidToken.KFunc,
-            "return" to OrchidToken.KReturn
+            "return" to OrchidToken.KReturn,
+            "if" to OrchidToken.KIf,
+            "else" to OrchidToken.KElse
         )
     }
 }

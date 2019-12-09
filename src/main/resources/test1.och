@@ -18,8 +18,22 @@ func print(msg: Any): Void {
 func getNumArr(): Array<Number> {
     var number: Number = 1;
     var arr: Array<Number> = []Number{number, 2, 4};
-    arr = []Number{1, number, 3};
+
+    {
+        arr = []Number{1, number, 3};
+        var a: Number = 1;
+        arr = []Number{a, number, 3};
+
+    }
+    # arr = []Number{a};
     return arr;
+}
+
+if (m + 2)
+    print("hi");
+else {
+    var a: Number = 1;
+    print(a);
 }
 
 func getNumber(arg: Number): Number {

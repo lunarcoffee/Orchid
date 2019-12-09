@@ -134,6 +134,8 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         return when (lexer.peek()) {
             is OrchidToken.KVar -> variableDeclaration()
             is OrchidToken.KReturn -> returnStatement()
+            is OrchidToken.KIf -> ifStatement()
+            is OrchidToken.LBrace -> scope()
             else -> expression().also { expectToken<OrchidToken.Terminator>() }
         }
     }
@@ -158,6 +160,39 @@ class OrchidParser(override val lexer: Lexer) : Parser {
     private fun returnStatement(): OrchidNode.Return {
         expectToken<OrchidToken.KReturn>()
         return OrchidNode.Return(expression()).also { expectToken<OrchidToken.Terminator>() }
+    }
+
+    private fun ifStatement(): OrchidNode.IfStatement {
+        expectToken<OrchidToken.KIf>()
+
+        expectToken<OrchidToken.LParen>()
+        val condition = expression()
+        expectToken<OrchidToken.RParen>()
+
+        val body = statement()
+        val elseStmt = if (lexer.peek() == OrchidToken.KElse) {
+            lexer.next()
+            statement()
+        } else {
+            null
+        }
+
+        return OrchidNode.IfStatement(condition, body, elseStmt)
+    }
+
+    private fun scope(): OrchidNode.Scope {
+        expectToken<OrchidToken.LBrace>()
+
+        val body = mutableListOf<OrchidNode.Statement>()
+        var next = lexer.peek()
+
+        while (next != OrchidToken.RBrace) {
+            body += statement()
+            next = lexer.peek()
+        }
+
+        expectToken<OrchidToken.RBrace>()
+        return OrchidNode.Scope(body)
     }
 
     private fun arrayLiteral(): OrchidNode.ArrayLiteral {

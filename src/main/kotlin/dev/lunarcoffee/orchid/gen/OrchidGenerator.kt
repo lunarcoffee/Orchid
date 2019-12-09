@@ -34,11 +34,15 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
     private fun statement(stmt: OrchidNode.Statement): String {
         return when (stmt) {
             is OrchidNode.VarDecl -> "var ${stmt.name}" +
-                    if (stmt.value != null) " = ${expression(stmt.value)}" else ""
-            is OrchidNode.Return -> "return ${expression(stmt.value)}"
-            is OrchidNode.Expression -> expression(stmt)
+                    if (stmt.value != null) " = ${expression(stmt.value)};" else ";"
+            is OrchidNode.Return -> "return ${expression(stmt.value)};"
+            is OrchidNode.Expression -> expression(stmt) + ";"
+            is OrchidNode.Scope -> "{${stmt.body.joinToString("") { statement(it) }}}"
+            is OrchidNode.IfStatement ->
+                "if (${expression(stmt.condition)}) ${statement(stmt.body)}" +
+                        if (stmt.elseStmt != null) " else ${statement(stmt.elseStmt)}" else ""
             else -> exitWithMessage("Syntax: expected variable declaration or return!", 3)
-        } + ";"
+        }
     }
 
     private fun expression(expr: OrchidNode.Expression): String {
