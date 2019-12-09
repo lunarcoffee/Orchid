@@ -58,8 +58,32 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         return OrchidNode.FunctionDefinition(name, args, body, returnType)
     }
 
-    private fun expression(): OrchidNode.Expression {
+    // Parse expressions with precedence climbing.
+    private fun expression(minPrecedence: Int = 1): OrchidNode.Expression {
+        var left = expressionAtom()
+        var next = lexer.peek()
+
+        while (next is OrchidToken.Operator && next.precedence >= minPrecedence) {
+            lexer.next()
+            val nextPrecedence = minPrecedence + if (next.right) 0 else 1
+            val right = expression(nextPrecedence)
+
+            left = when (next) {
+                is OrchidToken.Plus -> OrchidNode.Plus(left, right)
+                is OrchidToken.Minus -> OrchidNode.Minus(left, right)
+                is OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
+                is OrchidToken.Slash -> OrchidNode.Divide(left, right)
+                is OrchidToken.Dollar -> OrchidNode.Exponent(left, right)
+                else -> exitWithMessage("Syntax: unexpected operator!", 2)
+            }
+            next = lexer.peek()
+        }
+        return left
+    }
+
+    private fun expressionAtom(): OrchidNode.Expression {
         return when (val next = lexer.next()) {
+            is OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
             is OrchidToken.NumberLiteral -> OrchidNode.NumberLiteral(next.value)
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
             is OrchidToken.LBracket -> arrayLiteral()

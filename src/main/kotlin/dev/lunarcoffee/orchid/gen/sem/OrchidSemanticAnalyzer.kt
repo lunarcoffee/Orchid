@@ -79,6 +79,10 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
                 exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
             is OrchidNode.Assignment -> assignment(expr)
             is OrchidNode.FunctionCall -> functionCall(expr)
+            is OrchidNode.BinOp -> {
+                expression(expr.left)
+                expression(expr.right)
+            }
         }
     }
 
@@ -142,6 +146,12 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         return expr.type ?: when (expr) {
             is OrchidNode.VarRef -> symbols[expr.name]?.type
             is OrchidNode.FunctionCall -> symbols[expr.name]?.type
+            is OrchidNode.BinOp -> {
+                val typeLeft = getExprType(expr.left)
+                if (typeLeft != getExprType(expr.right))
+                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
+                typeLeft
+            }
             else -> exitWithMessage("Semantic: unexpected expression!", 4)
         }!!
     }

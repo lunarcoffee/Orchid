@@ -27,6 +27,16 @@ sealed class OrchidNode : Node {
     class Assignment(val name: ScopedName, val value: Expression) : Expression(null)
     class FunctionCall(val name: ScopedName, val args: List<Expression>) : Expression(null)
 
+    // [repr] is used during code generation to output the correct operator.
+    open class BinOp(val left: Expression, val right: Expression, val repr: String) :
+        Expression(null)
+
+    class Plus(left: Expression, right: Expression) : BinOp(left, right, "+")
+    class Minus(left: Expression, right: Expression) : BinOp(left, right, "-")
+    class Multiply(left: Expression, right: Expression) : BinOp(left, right, "*")
+    class Divide(left: Expression, right: Expression) : BinOp(left, right, "/")
+    class Exponent(left: Expression, right: Expression) : BinOp(left, right, "**")
+
     // Optionally generic type.
     data class Type(
         val name: ScopedName,

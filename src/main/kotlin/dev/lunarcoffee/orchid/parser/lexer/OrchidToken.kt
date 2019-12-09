@@ -20,6 +20,14 @@ sealed class OrchidToken(private val repr: String) : Token {
     object RAngle : OrchidToken(">")
     object EOF : OrchidToken("<EOF>")
 
+    // [right] determines right-associativity (i.e. exponentiation).
+    open class Operator(repr: String, val precedence: Int, val right: Boolean) : OrchidToken(repr)
+    object Plus : Operator("+", 1, false)
+    object Minus : Operator("-", 1, false)
+    object Asterisk : Operator("*", 2, false)
+    object Slash : Operator("/", 2, false)
+    object Dollar : Operator("$", 3, true)
+
     object KVar : ID("var")
     object KFunc : ID("func")
     object KReturn : ID("return")

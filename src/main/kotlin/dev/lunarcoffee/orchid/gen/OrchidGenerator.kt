@@ -47,11 +47,15 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.StringLiteral -> "\"${expr.value}\""
             is OrchidNode.ArrayLiteral -> "[${joinExpr(expr.values)}]"
             is OrchidNode.VarRef -> expr.name.toString()
+            is OrchidNode.BinOp ->
+                "(${expression(expr.left)} ${expr.repr} ${expression(expr.right)})"
             is OrchidNode.Assignment -> "${expr.name} = ${expression(expr.value)}"
-            is OrchidNode.FunctionCall -> if (expr.name.parts[0] == "js")
-                "${expr.name.parts.drop(1).joinToString(".")}(${joinExpr(expr.args)})"
-            else
-                "${expr.name}(${joinExpr(expr.args)})"
+            is OrchidNode.FunctionCall -> {
+                if (expr.name.parts[0] == "js")
+                    "${expr.name.parts.drop(1).joinToString(".")}(${joinExpr(expr.args)})"
+                else
+                    "${expr.name}(${joinExpr(expr.args)})"
+            }
             else -> exitWithMessage(
                 "Syntax: expected number, string, array, variable, or function call!",
                 3
