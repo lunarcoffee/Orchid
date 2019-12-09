@@ -69,21 +69,23 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             val right = expression(nextPrecedence)
 
             left = when (next) {
-                is OrchidToken.Plus -> OrchidNode.Plus(left, right)
-                is OrchidToken.Dash -> OrchidNode.Minus(left, right)
-                is OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
-                is OrchidToken.Slash -> OrchidNode.Divide(left, right)
-                is OrchidToken.Percent -> OrchidNode.Modulo(left, right)
-                is OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
-                is OrchidToken.Caret -> OrchidNode.BitXor(left, right)
-                is OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
-                is OrchidToken.DoubleAsterisk -> OrchidNode.Exponent(left, right)
-                is OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
-                is OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
-                is OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)
-                is OrchidToken.RAngle -> OrchidNode.BoolGreater(left, right)
-                is OrchidToken.LAngleEquals -> OrchidNode.BoolLessEq(left, right)
-                is OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
+                OrchidToken.Plus -> OrchidNode.Plus(left, right)
+                OrchidToken.Dash -> OrchidNode.Minus(left, right)
+                OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
+                OrchidToken.Slash -> OrchidNode.Divide(left, right)
+                OrchidToken.Percent -> OrchidNode.Modulo(left, right)
+                OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
+                OrchidToken.Caret -> OrchidNode.BitXor(left, right)
+                OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
+                OrchidToken.DoubleAsterisk -> OrchidNode.Exponent(left, right)
+                OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
+                OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
+                OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)
+                OrchidToken.RAngle -> OrchidNode.BoolGreater(left, right)
+                OrchidToken.LAngleEquals -> OrchidNode.BoolLessEq(left, right)
+                OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
+                OrchidToken.DoubleAmpersand -> OrchidNode.BoolAnd(left, right)
+                OrchidToken.DoublePipe -> OrchidNode.BoolOr(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }
             next = lexer.peek()
@@ -93,16 +95,16 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
     private fun expressionAtom(): OrchidNode.Expression {
         return when (val next = lexer.next()) {
-            is OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
+            OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
             is OrchidToken.NumberLiteral -> OrchidNode.NumberLiteral(next.value)
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
-            is OrchidToken.KTrue -> OrchidNode.BoolTrue
-            is OrchidToken.KFalse -> OrchidNode.BoolFalse
-            is OrchidToken.LBracket -> arrayLiteral()
-            is OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
-            is OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
-            is OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
-            is OrchidToken.Bang -> OrchidNode.BoolNot(expressionAtom())
+            OrchidToken.KTrue -> OrchidNode.BoolTrue
+            OrchidToken.KFalse -> OrchidNode.BoolFalse
+            OrchidToken.LBracket -> arrayLiteral()
+            OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
+            OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
+            OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
+            OrchidToken.Bang -> OrchidNode.BoolNot(expressionAtom())
             is OrchidToken.ID -> {
                 val name = scopedName(next.value)
                 when (lexer.peek()) {
@@ -300,9 +302,30 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             OrchidToken.LAngle::class to "Syntax: expected '<'!",
             OrchidToken.RAngle::class to "Syntax: expected '>'!",
             OrchidToken.EOF::class to "Syntax: expected the end of file!",
+            OrchidToken.Plus::class to "Syntax: expected '+'!",
+            OrchidToken.Dash::class to "Syntax: expected '-'!",
+            OrchidToken.Asterisk::class to "Syntax: expected '*'!",
+            OrchidToken.Slash::class to "Syntax: expected '/'!",
+            OrchidToken.Percent::class to "Syntax: expected '%'!",
+            OrchidToken.DoubleAsterisk::class to "Syntax: expected '**'!",
+            OrchidToken.Ampersand::class to "Syntax: expected '&'!",
+            OrchidToken.Caret::class to "Syntax: expected '^'!",
+            OrchidToken.Pipe::class to "Syntax: expected '|'!",
+            OrchidToken.DoubleEquals::class to "Syntax: expected '=='!",
+            OrchidToken.BangEquals::class to "Syntax: expected '!='!",
+            OrchidToken.LAngleEquals::class to "Syntax: expected '<='!",
+            OrchidToken.RAngleEquals::class to "Syntax: expected '>='!",
+            OrchidToken.DoubleAmpersand::class to "Syntax: expected '&&'!",
+            OrchidToken.DoublePipe::class to "Syntax: expected '||'!",
+            OrchidToken.Tilde::class to "Syntax: expected '~'!",
+            OrchidToken.Bang::class to "Syntax: expected '!'!",
             OrchidToken.KVar::class to "Syntax: expected 'var'!",
             OrchidToken.KFunc::class to "Syntax: expected 'func'!",
-            OrchidToken.KReturn::class to "Syntax: expected 'return'!"
+            OrchidToken.KReturn::class to "Syntax: expected 'return'!",
+            OrchidToken.KIf::class to "Syntax: expected 'if'!",
+            OrchidToken.KElse::class to "Syntax: expected 'else'!",
+            OrchidToken.KTrue::class to "Syntax: expected 'true'!",
+            OrchidToken.KFalse::class to "Syntax: expected 'false'!"
         )
     }
 }

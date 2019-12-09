@@ -39,9 +39,9 @@ class OrchidLexer(file: File) : Lexer {
             '*' -> ifNextChar('*', OrchidToken.DoubleAsterisk, OrchidToken.Asterisk)
             '/' -> OrchidToken.Slash
             '%' -> OrchidToken.Percent
-            '&' -> OrchidToken.Ampersand
+            '&' -> ifNextChar('&', OrchidToken.DoubleAmpersand, OrchidToken.Ampersand)
             '^' -> OrchidToken.Caret
-            '|' -> OrchidToken.Pipe
+            '|' -> ifNextChar('|', OrchidToken.DoublePipe, OrchidToken.Pipe)
             '~' -> OrchidToken.Tilde
             '!' -> ifNextChar('=', OrchidToken.BangEquals, OrchidToken.Bang)
             '\u0000' -> OrchidToken.EOF

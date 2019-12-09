@@ -80,16 +80,37 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
                 exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
             is OrchidNode.Assignment -> assignment(expr)
             is OrchidNode.FunctionCall -> functionCall(expr)
-            is OrchidNode.BinOp -> {
-                expression(expr.left)
-                expression(expr.right)
-
-                // Ensure binary operator operand types match.
-                if (getExprType(expr.left) != getExprType(expr.right))
-                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
-            }
+            is OrchidNode.BoolOp -> boolOp(expr)
+            is OrchidNode.BinOp -> binOp(expr)
+            is OrchidNode.BoolNot -> boolNot(expr)
             is OrchidNode.UnaryOp -> expression(expr.operand)
         }
+    }
+
+    private fun boolOp(expr: OrchidNode.BoolOp) {
+        binOp(expr)
+        if (getExprType(expr.left) != OrchidNode.Type.boolean) {
+            exitWithMessage(
+                "Semantic: operator '${expr.repr}' can only be applied to 'Boolean's!",
+                4
+            )
+        }
+    }
+
+    private fun binOp(expr: OrchidNode.BinOp) {
+        expression(expr.left)
+        expression(expr.right)
+
+        // Ensure binary operator operand types match.
+        if (getExprType(expr.left) != getExprType(expr.right))
+            exitWithMessage("Semantic: binary operator operand types do not match!", 4)
+    }
+
+    private fun boolNot(expr: OrchidNode.BoolNot) {
+        val exprType = getExprType(expr.operand)
+        if (exprType != OrchidNode.Type.boolean)
+            exitWithMessage("Semantic: operator '!' cannot be applied to '$exprType'!", 4)
+        expression(expr.operand)
     }
 
     private fun scope(stmt: OrchidNode.Scope, func: OrchidNode.FunctionDefinition? = null) {

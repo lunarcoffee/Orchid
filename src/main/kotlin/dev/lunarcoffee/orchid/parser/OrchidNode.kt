@@ -67,9 +67,15 @@ sealed class OrchidNode : Node {
     class BoolLessEq(left: Expression, right: Expression) : CondOp(left, right, "<=")
     class BoolGreaterEq(left: Expression, right: Expression) : CondOp(left, right, ">=")
 
-    open class UnaryOp(val operand: Expression, val repr: String) : Expression(null)
+    open class BoolOp(left: Expression, right: Expression, repr: String) : CondOp(left, right, repr)
+    class BoolAnd(left: Expression, right: Expression) : BoolOp(left, right, "&&")
+    class BoolOr(left: Expression, right: Expression) : BoolOp(left, right, "||")
+
+    open class UnaryOp(val operand: Expression, val repr: String, type: Type? = null) :
+        Expression(type)
+
     class UnaryMinus(operand: Expression) : UnaryOp(operand, "-")
-    class UnaryPlus(operand: Expression) : UnaryOp(operand, "+")
+    class UnaryPlus(operand: Expression) : UnaryOp(operand, "+", Type.number)
     class BitComplement(operand: Expression) : UnaryOp(operand, "~")
     class BoolNot(operand: Expression) : UnaryOp(operand, "!")
 
