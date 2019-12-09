@@ -70,7 +70,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
             left = when (next) {
                 is OrchidToken.Plus -> OrchidNode.Plus(left, right)
-                is OrchidToken.Minus -> OrchidNode.Minus(left, right)
+                is OrchidToken.Dash -> OrchidNode.Minus(left, right)
                 is OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
                 is OrchidToken.Slash -> OrchidNode.Divide(left, right)
                 is OrchidToken.Dollar -> OrchidNode.Exponent(left, right)
@@ -87,6 +87,9 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.NumberLiteral -> OrchidNode.NumberLiteral(next.value)
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
             is OrchidToken.LBracket -> arrayLiteral()
+            is OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
+            is OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
+            is OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
             is OrchidToken.ID -> {
                 val name = scopedName(next.value)
                 when (lexer.peek()) {

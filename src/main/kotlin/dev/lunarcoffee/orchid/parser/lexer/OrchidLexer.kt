@@ -36,10 +36,11 @@ class OrchidLexer(file: File) : Lexer {
             '<' -> OrchidToken.LAngle
             '>' -> OrchidToken.RAngle
             '+' -> OrchidToken.Plus
-            '-' -> OrchidToken.Minus
+            '-' -> OrchidToken.Dash
             '*' -> OrchidToken.Asterisk
             '/' -> OrchidToken.Slash
             '$' -> OrchidToken.Dollar
+            '~' -> OrchidToken.Tilde
             '\u0000' -> OrchidToken.EOF
             ' ', '\n' -> advance().run { next() }.also { advance(back = true) }
             '#' -> {

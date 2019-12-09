@@ -83,6 +83,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
                 expression(expr.left)
                 expression(expr.right)
             }
+            is OrchidNode.UnaryOp -> expression(expr.operand)
         }
     }
 
@@ -152,6 +153,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
                     exitWithMessage("Semantic: binary operator operand types do not match!", 4)
                 typeLeft
             }
+            is OrchidNode.UnaryOp -> getExprType(expr.operand)
             else -> exitWithMessage("Semantic: unexpected expression!", 4)
         }!!
     }

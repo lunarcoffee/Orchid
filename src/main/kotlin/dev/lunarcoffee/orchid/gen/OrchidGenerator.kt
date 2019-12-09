@@ -49,6 +49,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.VarRef -> expr.name.toString()
             is OrchidNode.BinOp ->
                 "(${expression(expr.left)} ${expr.repr} ${expression(expr.right)})"
+            is OrchidNode.UnaryOp -> "${expr.repr}${expression(expr.operand)}"
             is OrchidNode.Assignment -> "${expr.name} = ${expression(expr.value)}"
             is OrchidNode.FunctionCall -> {
                 if (expr.name.parts[0] == "js")

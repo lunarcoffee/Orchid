@@ -37,6 +37,11 @@ sealed class OrchidNode : Node {
     class Divide(left: Expression, right: Expression) : BinOp(left, right, "/")
     class Exponent(left: Expression, right: Expression) : BinOp(left, right, "**")
 
+    open class UnaryOp(val operand: Expression, val repr: String) : Expression(null)
+    class UnaryMinus(operand: Expression) : UnaryOp(operand, "-")
+    class UnaryPlus(operand: Expression) : UnaryOp(operand, "+")
+    class BitComplement(operand: Expression) : UnaryOp(operand, "~")
+
     // Optionally generic type.
     data class Type(
         val name: ScopedName,
