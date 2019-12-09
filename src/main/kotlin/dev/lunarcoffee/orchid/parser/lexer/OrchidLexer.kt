@@ -36,13 +36,12 @@ class OrchidLexer(file: File) : Lexer {
             '>' -> ifNextChar('=', OrchidToken.RAngleEquals, OrchidToken.RAngle)
             '+' -> OrchidToken.Plus
             '-' -> OrchidToken.Dash
-            '*' -> OrchidToken.Asterisk
+            '*' -> ifNextChar('*', OrchidToken.DoubleAsterisk, OrchidToken.Asterisk)
             '/' -> OrchidToken.Slash
             '%' -> OrchidToken.Percent
             '&' -> OrchidToken.Ampersand
             '^' -> OrchidToken.Caret
             '|' -> OrchidToken.Pipe
-            '$' -> OrchidToken.Dollar
             '~' -> OrchidToken.Tilde
             '!' -> ifNextChar('=', OrchidToken.BangEquals, OrchidToken.Bang)
             '\u0000' -> OrchidToken.EOF

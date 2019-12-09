@@ -7,8 +7,8 @@ print(s);
 s = "String again";
 print(s);
 
-var m: Number = getNumber(-1239.2) * 2 $ 5 $ 3 + 2;
-var k: Number = 3 + m * 2 / (1 - getNumber(3)) $ -2 $ 3;
+var m: Number = getNumber(-1239.2) * 2 ** 5 ** 3 + 2;
+var k: Number = 3 + m * 2 / (1 - getNumber(3)) ** -2 ** 3;
 
 # This is a comment!
 func print(msg: Any): Void {
@@ -31,7 +31,7 @@ func getNumArr(): Array<Number> {
 
 var b: Boolean = false;
 if (b)
-    print("bye");
+    var a: Number = 2; # Test redefinition checks.
 else if (s == "String again")
     print("hi");
 else {
@@ -40,5 +40,5 @@ else {
 }
 
 func getNumber(arg: Number): Number {
-    return arg + 53942.233 $ 0.1;
+    return arg + 53942.233 ** 0.1;
 }

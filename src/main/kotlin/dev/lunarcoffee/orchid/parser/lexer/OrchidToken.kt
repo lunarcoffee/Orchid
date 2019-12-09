@@ -28,7 +28,7 @@ sealed class OrchidToken(private val repr: String) : Token {
     object Asterisk : Operator("*", 7, false)
     object Slash : Operator("/", 7, false)
     object Percent : Operator("%", 7, false)
-    object Dollar : Operator("$", 8, true)
+    object DoubleAsterisk : Operator("**", 8, true)
     object Ampersand : Operator("&", 1, false)
     object Caret : Operator("^", 2, false)
     object Pipe : Operator("|", 3, false)

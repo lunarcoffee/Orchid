@@ -77,7 +77,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 is OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
                 is OrchidToken.Caret -> OrchidNode.BitXor(left, right)
                 is OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
-                is OrchidToken.Dollar -> OrchidNode.Exponent(left, right)
+                is OrchidToken.DoubleAsterisk -> OrchidNode.Exponent(left, right)
                 is OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
                 is OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
                 is OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)

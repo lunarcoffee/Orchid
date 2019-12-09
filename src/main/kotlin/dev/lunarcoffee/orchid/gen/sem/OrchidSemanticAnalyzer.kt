@@ -23,15 +23,14 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         checkType(decl.returnType)
 
         // Put function arguments in scope before checking semantics of body.
-        scope++
-        for ((name, type) in decl.args)
-            symbols.addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
-        for (statement in decl.body)
-            statement(statement, if (statement is OrchidNode.Return) decl else null)
+        newScope {
+            for ((name, type) in decl.args)
+                symbols
+                    .addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
+            for (statement in decl.body)
+                statement(statement, if (statement is OrchidNode.Return) decl else null)
+        }
 
-        // Remove function arguments from scope.
-        scope--
-        symbols.removeOutOfScope(scope)
         symbols.addSymbol(
             OrchidSymbol.FuncSymbol(decl, decl.args.values.toList(), scope)
         )
@@ -94,11 +93,10 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun scope(stmt: OrchidNode.Scope, func: OrchidNode.FunctionDefinition? = null) {
-        scope++
-        for (statement in stmt.body)
-            statement(statement, func)
-        scope--
-        symbols.removeOutOfScope(scope)
+        newScope {
+            for (statement in stmt.body)
+                statement(statement, func)
+        }
     }
 
     private fun ifStatement(
@@ -109,9 +107,9 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         if (getExprType(stmt.condition) != OrchidNode.Type.boolean)
             exitWithMessage("Semantic: if statement can only contain a 'Boolean' condition!", 4)
 
-        statement(stmt.body, func)
+        newScope { statement(stmt.body, func) }
         if (stmt.elseStmt != null)
-            statement(stmt.elseStmt, func)
+            newScope { statement(stmt.elseStmt, func) }
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {
@@ -183,5 +181,12 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.UnaryOp -> getExprType(expr.operand)
             else -> exitWithMessage("Semantic: unexpected expression!", 4)
         }!!
+    }
+
+    private fun newScope(func: () -> Unit) {
+        scope++
+        func()
+        scope--
+        symbols.removeOutOfScope(scope)
     }
 }
