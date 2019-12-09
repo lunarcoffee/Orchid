@@ -30,7 +30,7 @@ class OrchidLexer(file: File) : Lexer {
             '{' -> OrchidToken.LBrace
             '}' -> OrchidToken.RBrace
             '(' -> OrchidToken.LParen
-            ')' -> OrchidToken.RParen
+            ')' -> OrchidToken.RParen        // TODO: refactor into table
             '[' -> OrchidToken.LBracket
             ']' -> OrchidToken.RBracket
             '<' -> OrchidToken.LAngle
@@ -39,6 +39,10 @@ class OrchidLexer(file: File) : Lexer {
             '-' -> OrchidToken.Dash
             '*' -> OrchidToken.Asterisk
             '/' -> OrchidToken.Slash
+            '%' -> OrchidToken.Percent
+            '&' -> OrchidToken.Ampersand
+            '^' -> OrchidToken.Caret
+            '|' -> OrchidToken.Pipe
             '$' -> OrchidToken.Dollar
             '~' -> OrchidToken.Tilde
             '\u0000' -> OrchidToken.EOF

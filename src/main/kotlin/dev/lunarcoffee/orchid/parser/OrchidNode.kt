@@ -45,7 +45,13 @@ sealed class OrchidNode : Node {
     class Minus(left: Expression, right: Expression) : BinOp(left, right, "-")
     class Multiply(left: Expression, right: Expression) : BinOp(left, right, "*")
     class Divide(left: Expression, right: Expression) : BinOp(left, right, "/")
-    class Exponent(left: Expression, right: Expression) : BinOp(left, right, "**")
+    class Modulo(left: Expression, right: Expression) : BinOp(left, right, "%")
+    class BitAnd(left: Expression, right: Expression) : BinOp(left, right, "&")
+    class BitXor(left: Expression, right: Expression) : BinOp(left, right, "^")
+    class BitOr(left: Expression, right: Expression) : BinOp(left, right, "|")
+
+    // [repr] is unused; 'Math.pow' is generated instead for higher compatibility.
+    class Exponent(left: Expression, right: Expression) : BinOp(left, right, "")
 
     open class UnaryOp(val operand: Expression, val repr: String) : Expression(null)
     class UnaryMinus(operand: Expression) : UnaryOp(operand, "-")

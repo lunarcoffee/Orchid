@@ -53,8 +53,10 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.BoolTrue -> "true"
             is OrchidNode.BoolFalse -> "false"
             is OrchidNode.VarRef -> expr.name.toString()
+            is OrchidNode.Exponent ->
+                "Math.pow(${expression(expr.left)}, ${expression(expr.right)})"
             is OrchidNode.BinOp ->
-                "(${expression(expr.left)} ${expr.repr} ${expression(expr.right)})"
+                "(${expression(expr.left)}) ${expr.repr} (${expression(expr.right)})"
             is OrchidNode.UnaryOp -> "${expr.repr}${expression(expr.operand)}"
             is OrchidNode.Assignment -> "${expr.name} = ${expression(expr.value)}"
             is OrchidNode.FunctionCall -> {

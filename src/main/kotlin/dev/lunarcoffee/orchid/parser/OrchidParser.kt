@@ -65,7 +65,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         while (next is OrchidToken.Operator && next.precedence >= minPrecedence) {
             lexer.next()
-            val nextPrecedence = minPrecedence + if (next.right) 0 else 1
+            val nextPrecedence = next.precedence + if (next.right) 0 else 1
             val right = expression(nextPrecedence)
 
             left = when (next) {
@@ -73,6 +73,10 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 is OrchidToken.Dash -> OrchidNode.Minus(left, right)
                 is OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
                 is OrchidToken.Slash -> OrchidNode.Divide(left, right)
+                is OrchidToken.Percent -> OrchidNode.Modulo(left, right)
+                is OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
+                is OrchidToken.Caret -> OrchidNode.BitXor(left, right)
+                is OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
                 is OrchidToken.Dollar -> OrchidNode.Exponent(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }

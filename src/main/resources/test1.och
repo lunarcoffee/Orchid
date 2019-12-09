@@ -7,7 +7,7 @@ print(s);
 s = "String again";
 print(s);
 
-var m: Number = getNumber(-1239.2);
+var m: Number = getNumber(-1239.2) * 2 $ 5 $ 3 + 2;
 var k: Number = 3 + m * 2 / (1 - getNumber(3)) $ -2 $ 3;
 
 # This is a comment!
@@ -17,7 +17,7 @@ func print(msg: Any): Void {
 
 func getNumArr(): Array<Number> {
     var number: Number = 1;
-    var arr: Array<Number> = []Number{number, 2, 4};
+    var arr: Array<Number> = []Number{number, 2 & 1, 4};
 
     {
         arr = []Number{1, number, 3};
