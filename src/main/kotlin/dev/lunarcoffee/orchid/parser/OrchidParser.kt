@@ -78,6 +78,12 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 is OrchidToken.Caret -> OrchidNode.BitXor(left, right)
                 is OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
                 is OrchidToken.Dollar -> OrchidNode.Exponent(left, right)
+                is OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
+                is OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
+                is OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)
+                is OrchidToken.RAngle -> OrchidNode.BoolGreater(left, right)
+                is OrchidToken.LAngleEquals -> OrchidNode.BoolLessEq(left, right)
+                is OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }
             next = lexer.peek()
@@ -96,6 +102,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
             is OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
             is OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
+            is OrchidToken.Bang -> OrchidNode.BoolNot(expressionAtom())
             is OrchidToken.ID -> {
                 val name = scopedName(next.value)
                 when (lexer.peek()) {

@@ -84,6 +84,10 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.BinOp -> {
                 expression(expr.left)
                 expression(expr.right)
+
+                // Ensure binary operator operand types match.
+                if (getExprType(expr.left) != getExprType(expr.right))
+                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
             }
             is OrchidNode.UnaryOp -> expression(expr.operand)
         }

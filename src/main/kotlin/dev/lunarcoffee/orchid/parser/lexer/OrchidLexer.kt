@@ -18,23 +18,22 @@ class OrchidLexer(file: File) : Lexer {
             return peekReturns.poll()
 
         return when (curChar) {
-            in 'a'..'z', in 'A'..'Z', '_' ->
-                readIdentifier().run { keywords.getOrElse(this) { OrchidToken.ID(this) } }
+            in 'a'..'z', in 'A'..'Z', '_' -> readIdOrKeywordToken()
             in '0'..'9' -> OrchidToken.NumberLiteral(readNumber())
             '"' -> OrchidToken.StringLiteral(readString())
             ':' -> OrchidToken.Colon
             '.' -> OrchidToken.Dot
             ',' -> OrchidToken.Comma
-            '=' -> OrchidToken.Equals
+            '=' -> ifNextChar('=', OrchidToken.DoubleEquals, OrchidToken.Equals)
             ';' -> OrchidToken.Terminator
             '{' -> OrchidToken.LBrace
             '}' -> OrchidToken.RBrace
             '(' -> OrchidToken.LParen
-            ')' -> OrchidToken.RParen        // TODO: refactor into table
+            ')' -> OrchidToken.RParen
             '[' -> OrchidToken.LBracket
             ']' -> OrchidToken.RBracket
-            '<' -> OrchidToken.LAngle
-            '>' -> OrchidToken.RAngle
+            '<' -> ifNextChar('=', OrchidToken.LAngleEquals, OrchidToken.LAngle)
+            '>' -> ifNextChar('=', OrchidToken.RAngleEquals, OrchidToken.RAngle)
             '+' -> OrchidToken.Plus
             '-' -> OrchidToken.Dash
             '*' -> OrchidToken.Asterisk
@@ -45,6 +44,7 @@ class OrchidLexer(file: File) : Lexer {
             '|' -> OrchidToken.Pipe
             '$' -> OrchidToken.Dollar
             '~' -> OrchidToken.Tilde
+            '!' -> ifNextChar('=', OrchidToken.BangEquals, OrchidToken.Bang)
             '\u0000' -> OrchidToken.EOF
             ' ', '\n' -> advance().run { next() }.also { advance(back = true) }
             '#' -> {
@@ -57,6 +57,14 @@ class OrchidLexer(file: File) : Lexer {
     }
 
     override fun peek() = next().also { peekReturns.offer(it) }
+
+    private fun ifNextChar(nextChar: Char, ifTrue: Token, ifFalse: Token): Token {
+        advance()
+        if (curChar == nextChar)
+            return ifTrue
+        advance(back = true)
+        return ifFalse
+    }
 
     private fun readNumber(): Double {
         var dotSeen = false
@@ -84,14 +92,14 @@ class OrchidLexer(file: File) : Lexer {
         return string
     }
 
-    private fun readIdentifier(): String {
+    private fun readIdOrKeywordToken(): Token {
         var res = ""
         while (curChar.isLetterOrDigit() || curChar == '_') {
             res += curChar
             advance()
         }
         advance(back = true)
-        return res
+        return keywords.getOrElse(res) { OrchidToken.ID(res) }
     }
 
     private fun advance(back: Boolean = false) {

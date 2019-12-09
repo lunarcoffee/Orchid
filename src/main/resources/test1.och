@@ -23,17 +23,17 @@ func getNumArr(): Array<Number> {
         arr = []Number{1, number, 3};
         var a: Number = 1;
         arr = []Number{a, number, 3};
-
     }
+
     # arr = []Number{a};
     return arr;
 }
 
 var b: Boolean = false;
 if (b)
-    print("hi");
-else if (true)
     print("bye");
+else if (s == "String again")
+    print("hi");
 else {
     var a: Number = 1;
     print(a);

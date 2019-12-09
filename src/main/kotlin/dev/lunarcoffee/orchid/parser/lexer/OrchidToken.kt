@@ -23,18 +23,23 @@ sealed class OrchidToken(private val repr: String) : Token {
     // [right] determines right-associativity (i.e. exponentiation).
     open class Operator(repr: String, val precedence: Int, val right: Boolean) : OrchidToken(repr)
 
-    object Plus : Operator("+", 4, false)
-    object Dash : Operator("-", 4, false)
-    object Asterisk : Operator("*", 5, false)
-    object Slash : Operator("/", 5, false)
-    object Dollar : Operator("$", 6, true)
-    object Percent : Operator("%", 5, false)
+    object Plus : Operator("+", 6, false)
+    object Dash : Operator("-", 6, false)
+    object Asterisk : Operator("*", 7, false)
+    object Slash : Operator("/", 7, false)
+    object Percent : Operator("%", 7, false)
+    object Dollar : Operator("$", 8, true)
     object Ampersand : Operator("&", 1, false)
     object Caret : Operator("^", 2, false)
     object Pipe : Operator("|", 3, false)
+    object DoubleEquals : Operator("==", 4, false)
+    object BangEquals : Operator("!=", 4, false)
+    object LAngleEquals : Operator("<=", 5, false)
+    object RAngleEquals : Operator(">=", 5, false)
 
     // Exclusively unary operators.
     object Tilde : Operator("~", -1, false)
+    object Bang : Operator("!", -1, false)
 
     object KVar : ID("var")
     object KFunc : ID("func")

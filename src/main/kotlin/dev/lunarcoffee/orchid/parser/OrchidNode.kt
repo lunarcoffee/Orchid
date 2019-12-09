@@ -38,8 +38,12 @@ sealed class OrchidNode : Node {
     object BoolFalse : Expression(Type.boolean)
 
     // [repr] is used during code generation to output the correct operator.
-    open class BinOp(val left: Expression, val right: Expression, val repr: String) :
-        Expression(null)
+    open class BinOp(
+        val left: Expression,
+        val right: Expression,
+        val repr: String,
+        type: Type? = null
+    ) : Expression(type)
 
     class Plus(left: Expression, right: Expression) : BinOp(left, right, "+")
     class Minus(left: Expression, right: Expression) : BinOp(left, right, "-")
@@ -53,10 +57,21 @@ sealed class OrchidNode : Node {
     // [repr] is unused; 'Math.pow' is generated instead for higher compatibility.
     class Exponent(left: Expression, right: Expression) : BinOp(left, right, "")
 
+    open class CondOp(left: Expression, right: Expression, repr: String) :
+        BinOp(left, right, repr, Type.boolean)
+
+    class BoolEq(left: Expression, right: Expression) : CondOp(left, right, "===")
+    class BoolNotEq(left: Expression, right: Expression) : CondOp(left, right, "!==")
+    class BoolLess(left: Expression, right: Expression) : CondOp(left, right, "<")
+    class BoolGreater(left: Expression, right: Expression) : CondOp(left, right, ">")
+    class BoolLessEq(left: Expression, right: Expression) : CondOp(left, right, "<=")
+    class BoolGreaterEq(left: Expression, right: Expression) : CondOp(left, right, ">=")
+
     open class UnaryOp(val operand: Expression, val repr: String) : Expression(null)
     class UnaryMinus(operand: Expression) : UnaryOp(operand, "-")
     class UnaryPlus(operand: Expression) : UnaryOp(operand, "+")
     class BitComplement(operand: Expression) : UnaryOp(operand, "~")
+    class BoolNot(operand: Expression) : UnaryOp(operand, "!")
 
     // Optionally generic type.
     data class Type(
