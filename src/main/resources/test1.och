@@ -1,5 +1,5 @@
 var i: Number;
-var j: Array<Number> = getNumArr();
+var j: Array<Number> = getNumArr;
 var s: String = "String";
 
 print("Orchid");
@@ -9,6 +9,16 @@ print(s);
 
 var m: Number = getNumber(-1239.2) * 2 ** 5 ** 3 + 2;
 var k: Number = 3 + m * 2 / (1 - getNumber(3)) ** -2 ** 3;
+
+when (s + "!") {
+    "Number" -> print("number");
+    "String" -> {
+        var a: Number = 1;
+        print(a);
+    }
+    "hello", "String!" -> print("string!");
+    else -> print("error!");
+}
 
 # This is a comment!
 func print(msg: Any): Void {
@@ -25,7 +35,10 @@ func getNumArr(): Array<Number> {
         arr = []Number{a, number, +"339" >| 3};
     }
 
-    # arr = []Number{a};
+    when (number + 1) {
+        in arr -> print("in arr!");
+        in []Number{1, 2, 3} -> print("in array literal!"); # Eventually replace with range syntax.
+    }
     return arr;
 }
 

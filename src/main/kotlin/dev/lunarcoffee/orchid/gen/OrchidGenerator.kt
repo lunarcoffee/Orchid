@@ -41,7 +41,29 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.IfStatement ->
                 "if (${expression(stmt.condition)}) ${statement(stmt.body)}" +
                         if (stmt.elseStmt != null) " else ${statement(stmt.elseStmt)}" else ""
+            is OrchidNode.WhenStatement -> whenStatement(stmt)
             else -> exitWithMessage("Syntax: expected variable declaration or return!", 3)
+        }
+    }
+
+    private fun whenStatement(stmt: OrchidNode.WhenStatement): String {
+        val expr = expression(stmt.expr)
+        val first = stmt.branches.firstOrNull() ?: return ""
+        val rest = stmt.branches.drop(1).joinToString("") { whenBranch(it) }
+        return "var \$e = $expr;${whenBranch(first, true)}$rest"
+    }
+
+    private fun whenBranch(branch: OrchidNode.WhenBranch, first: Boolean = false): String {
+        val statement = if (first) "if" else "else if"
+        return when (branch) {
+            is OrchidNode.WhenEqBranch -> {
+                val cmps = branch.exprs.joinToString("||") { "\$e == ${expression(it)}" }
+                "$statement ($cmps) ${statement(branch.body)}"
+            }
+            is OrchidNode.WhenInBranch ->
+                "$statement (${expression(branch.expr)}.includes(\$e)) ${statement(branch.body)}"
+            is OrchidNode.WhenElseBranch -> "else ${statement(branch.body)}"
+            else -> exitWithMessage("Syntax: unexpected when branch!", 3)
         }
     }
 

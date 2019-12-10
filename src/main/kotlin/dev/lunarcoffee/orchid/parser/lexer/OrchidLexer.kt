@@ -33,7 +33,7 @@ class OrchidLexer(file: File) : Lexer {
             '[' -> OrchidToken.LBracket
             ']' -> OrchidToken.RBracket
             '+' -> OrchidToken.Plus
-            '-' -> OrchidToken.Dash
+            '-' -> ifNextChar('>', OrchidToken.RArrow, OrchidToken.Dash)
             '*' -> ifNextChar('*', OrchidToken.DoubleAsterisk, OrchidToken.Asterisk)
             '/' -> OrchidToken.Slash
             '%' -> OrchidToken.Percent
@@ -126,7 +126,9 @@ class OrchidLexer(file: File) : Lexer {
             "if" to OrchidToken.KIf,
             "else" to OrchidToken.KElse,
             "true" to OrchidToken.KTrue,
-            "false" to OrchidToken.KFalse
+            "false" to OrchidToken.KFalse,
+            "when" to OrchidToken.KWhen,
+            "in" to OrchidToken.KIn
         )
     }
 }

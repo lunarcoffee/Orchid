@@ -153,6 +153,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.KVar -> variableDeclaration()
             is OrchidToken.KReturn -> returnStatement()
             is OrchidToken.KIf -> ifStatement()
+            is OrchidToken.KWhen -> whenStatement()
             is OrchidToken.LBrace -> scope()
             else -> expression().also { expectToken<OrchidToken.Terminator>() }
         }
@@ -196,6 +197,56 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         }
 
         return OrchidNode.IfStatement(condition, body, elseStmt)
+    }
+
+    private fun whenStatement(): OrchidNode.WhenStatement {
+        expectToken<OrchidToken.KWhen>()
+
+        expectToken<OrchidToken.LParen>()
+        val cmpExpr = expression()
+        expectToken<OrchidToken.RParen>()
+
+        expectToken<OrchidToken.LBrace>()
+
+        val branches = mutableListOf<OrchidNode.WhenBranch>()
+        var next = lexer.peek()
+        while (next != OrchidToken.RBrace) {
+            branches += whenBranch()
+            next = lexer.peek()
+        }
+
+        lexer.next()
+        return OrchidNode.WhenStatement(cmpExpr, branches)
+    }
+
+    private fun whenBranch(): OrchidNode.WhenBranch {
+        return when (lexer.peek()) {
+            is OrchidToken.KElse -> {
+                lexer.next()
+                expectToken<OrchidToken.RArrow>()
+                OrchidNode.WhenElseBranch(statement())
+            }
+            is OrchidToken.KIn -> {
+                lexer.next()
+                val arrExpr = expression()
+                expectToken<OrchidToken.RArrow>()
+                OrchidNode.WhenInBranch(arrExpr, statement())
+            }
+            // Assume equality check branch.
+            else -> {
+                val exprs = mutableListOf(expression())
+                var next = lexer.peek()
+                while (next == OrchidToken.Comma) {
+                    lexer.next()
+                    exprs += expression()
+                    next = lexer.peek()
+                }
+
+                expectToken<OrchidToken.RArrow>()
+                OrchidNode.WhenEqBranch(exprs, statement())
+            }
+            // TODO: Range syntax for arrays
+        }
     }
 
     private fun scope(): OrchidNode.Scope {

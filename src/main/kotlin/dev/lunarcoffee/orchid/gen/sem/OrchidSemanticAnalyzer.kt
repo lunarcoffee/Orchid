@@ -46,6 +46,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.Expression -> expression(stmt)
             is OrchidNode.Scope -> scope(stmt, func)
             is OrchidNode.IfStatement -> ifStatement(stmt, func)
+            is OrchidNode.WhenStatement -> whenStatement(stmt, func)
         }
     }
 
@@ -131,6 +132,38 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         newScope { statement(stmt.body, func) }
         if (stmt.elseStmt != null)
             newScope { statement(stmt.elseStmt, func) }
+    }
+
+    private fun whenStatement(
+        stmt: OrchidNode.WhenStatement,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
+        expression(stmt.expr)
+        for (branch in stmt.branches)
+            whenBranch(branch, stmt.expr, func)
+    }
+
+    private fun whenBranch(
+        branch: OrchidNode.WhenBranch,
+        cmpExpr: OrchidNode.Expression,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
+        val cmpType = getExprType(cmpExpr)
+        when (branch) {
+            is OrchidNode.WhenEqBranch -> {
+                for (expr in branch.exprs)
+                    expression(expr)
+                if (branch.exprs.any { getExprType(it) != cmpType })
+                    exitWithMessage("Semantic: when statement can only compare '$cmpType'!", 4)
+            }
+            is OrchidNode.WhenInBranch -> {
+                expression(branch.expr)
+                val exprType = getExprType(branch.expr)
+                if (exprType.name.parts[0] != "Array")
+                    exitWithMessage("Semantic: when 'in' branch can only check arrays!", 4)
+            }
+        }
+        statement(branch.body, func)
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {

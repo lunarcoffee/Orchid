@@ -22,6 +22,12 @@ sealed class OrchidNode : Node {
         val elseStmt: Statement?
     ) : Statement()
 
+    class WhenStatement(val expr: Expression, val branches: List<WhenBranch>) : Statement()
+    open class WhenBranch(val body: Statement) : OrchidNode()
+    class WhenEqBranch(val exprs: List<Expression>, body: Statement) : WhenBranch(body)
+    class WhenInBranch(val expr: Expression, body: Statement) : WhenBranch(body)
+    class WhenElseBranch(body: Statement) : WhenBranch(body)
+
     // [type] used in semantic analysis, if null it can be determined from the symbol table.
     open class Expression(val type: Type?) : Statement()
 
