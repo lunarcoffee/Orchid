@@ -89,6 +89,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
                 OrchidToken.DoubleAmpersand -> OrchidNode.BoolAnd(left, right)
                 OrchidToken.DoublePipe -> OrchidNode.BoolOr(left, right)
+                OrchidToken.EqualsDot -> OrchidNode.ArrayRange(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }
             next = lexer.peek()
@@ -245,7 +246,6 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 expectToken<OrchidToken.RArrow>()
                 OrchidNode.WhenEqBranch(exprs, statement())
             }
-            // TODO: Range syntax for arrays
         }
     }
 

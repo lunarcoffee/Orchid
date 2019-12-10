@@ -23,10 +23,9 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
 
     private fun declaration(decl: OrchidNode.TopLevelDecl): String {
         return when (decl) {
-            is OrchidNode.FunctionDefinition -> """
-                |function ${decl.name}(${decl.args.keys.joinToString(",")}) 
-                |{${decl.body.joinToString("") { statement(it) }}}
-            """
+            is OrchidNode.FunctionDefinition ->
+                "function ${decl.name}(${decl.args.keys.joinToString(",")})" +
+                        "{${decl.body.joinToString("") { statement(it) }}}"
             else -> exitWithMessage("Syntax: expected function definition!", 3)
         }.trimMargin()
     }
@@ -34,13 +33,13 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
     private fun statement(stmt: OrchidNode.Statement): String {
         return when (stmt) {
             is OrchidNode.VarDecl -> "var ${stmt.name}" +
-                    if (stmt.value != null) " = ${expression(stmt.value)};" else ";"
+                    if (stmt.value != null) "=${expression(stmt.value)};" else ";"
             is OrchidNode.Return -> "return ${expression(stmt.value)};"
             is OrchidNode.Expression -> expression(stmt) + ";"
             is OrchidNode.Scope -> "{${stmt.body.joinToString("") { statement(it) }}}"
             is OrchidNode.IfStatement ->
-                "if (${expression(stmt.condition)}) ${statement(stmt.body)}" +
-                        if (stmt.elseStmt != null) " else ${statement(stmt.elseStmt)}" else ""
+                "if(${expression(stmt.condition)})${statement(stmt.body)}" +
+                        if (stmt.elseStmt != null) "else ${statement(stmt.elseStmt)}" else ""
             is OrchidNode.WhenStatement -> whenStatement(stmt)
             else -> exitWithMessage("Syntax: expected variable declaration or return!", 3)
         }
@@ -50,18 +49,18 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
         val expr = expression(stmt.expr)
         val first = stmt.branches.firstOrNull() ?: return ""
         val rest = stmt.branches.drop(1).joinToString("") { whenBranch(it) }
-        return "var \$e = $expr;${whenBranch(first, true)}$rest"
+        return "var \$e=$expr;${whenBranch(first, true)}$rest"
     }
 
     private fun whenBranch(branch: OrchidNode.WhenBranch, first: Boolean = false): String {
         val statement = if (first) "if" else "else if"
         return when (branch) {
             is OrchidNode.WhenEqBranch -> {
-                val cmps = branch.exprs.joinToString("||") { "\$e == ${expression(it)}" }
-                "$statement ($cmps) ${statement(branch.body)}"
+                val cmps = branch.exprs.joinToString("||") { "\$e===${expression(it)}" }
+                "$statement($cmps)${statement(branch.body)}"
             }
             is OrchidNode.WhenInBranch ->
-                "$statement (${expression(branch.expr)}.includes(\$e)) ${statement(branch.body)}"
+                "$statement(${expression(branch.expr)}.includes(\$e))${statement(branch.body)}"
             is OrchidNode.WhenElseBranch -> "else ${statement(branch.body)}"
             else -> exitWithMessage("Syntax: unexpected when branch!", 3)
         }
@@ -76,11 +75,16 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.BoolFalse -> "false"
             is OrchidNode.VarRef -> expr.name.toString()
             is OrchidNode.Exponent ->
-                "Math.pow(${expression(expr.left)}, ${expression(expr.right)})"
+                "Math.pow(${expression(expr.left)},${expression(expr.right)})"
+            is OrchidNode.ArrayRange -> {
+                val left = expression(expr.left)
+                val right = expression(expr.right)
+                "(Object.keys(new Array(($left)-($right))).map(function(x){return x+$left}))"
+            }
             is OrchidNode.BinOp ->
-                "(${expression(expr.left)}) ${expr.repr} (${expression(expr.right)})"
+                "(${expression(expr.left)})${expr.repr}(${expression(expr.right)})"
             is OrchidNode.UnaryOp -> "${expr.repr}${expression(expr.operand)}"
-            is OrchidNode.Assignment -> "${expr.name} = ${expression(expr.value)}"
+            is OrchidNode.Assignment -> "${expr.name}=${expression(expr.value)}"
             is OrchidNode.FunctionCall -> {
                 if (expr.name.parts[0] == "js")
                     "${expr.name.parts.drop(1).joinToString(".")}(${joinExpr(expr.args)})"

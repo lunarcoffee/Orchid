@@ -16,7 +16,7 @@ when (s + "!") {
         var a: Number = 1;
         print(a);
     }
-    "hello", "String!" -> print("string!");
+    "hello", "String again!", "a" -> print("string!");
     else -> print("error!");
 }
 
@@ -30,14 +30,14 @@ func getNumArr(): Array<Number> {
     var arr: Array<Number> = []Number{number, 2 & 1, 4 + +"5"};
 
     {
-        arr = []Number{1, number, 3};
+        arr = number + 1=.number + 4;
         var a: Number = 1;
         arr = []Number{a, number, +"339" >| 3};
     }
 
     when (number + 1) {
         in arr -> print("in arr!");
-        in []Number{1, 2, 3} -> print("in array literal!"); # Eventually replace with range syntax.
+        in 1=.3 -> print("in array literal!");
     }
     return arr;
 }

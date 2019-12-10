@@ -42,6 +42,7 @@ sealed class OrchidToken(private val repr: String) : Token {
     object RAngleEquals : Operator(">=", 7, false)
     object DoubleAmpersand : Operator("&&", 2, false)
     object DoublePipe : Operator("||", 1, false)
+    object EqualsDot : Operator("=.", 6, false)
 
     object Tilde : Operator("~", -1, false)
     object Bang : Operator("!", -1, false)

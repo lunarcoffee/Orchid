@@ -82,6 +82,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.Assignment -> assignment(expr)
             is OrchidNode.FunctionCall -> functionCall(expr)
             is OrchidNode.BoolOp -> boolOp(expr)
+            is OrchidNode.ArrayRange -> arrayRange(expr)
             is OrchidNode.BinOp -> binOp(expr)
             is OrchidNode.BoolNot -> boolNot(expr)
             is OrchidNode.UnaryOp -> expression(expr.operand)
@@ -96,6 +97,12 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
                 4
             )
         }
+    }
+
+    private fun arrayRange(expr: OrchidNode.ArrayRange) {
+        binOp(expr)
+        if (getExprType(expr.left) != OrchidNode.Type.number)
+            exitWithMessage("Semantic: operator '..' can only be applied to 'Number's!", 4)
     }
 
     private fun binOp(expr: OrchidNode.BinOp) {

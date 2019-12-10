@@ -24,7 +24,6 @@ class OrchidLexer(file: File) : Lexer {
             ':' -> OrchidToken.Colon
             '.' -> OrchidToken.Dot
             ',' -> OrchidToken.Comma
-            '=' -> ifNextChar('=', OrchidToken.DoubleEquals, OrchidToken.Equals)
             ';' -> OrchidToken.Terminator
             '{' -> OrchidToken.LBrace
             '}' -> OrchidToken.RBrace
@@ -49,6 +48,11 @@ class OrchidLexer(file: File) : Lexer {
                     advance()
                 next()
             }
+            '=' -> ifNextChar(
+                '=',
+                OrchidToken.DoubleEquals,
+                ifNextChar('.', OrchidToken.EqualsDot, OrchidToken.Equals)
+            )
             '<' -> ifNextChar(
                 '=',
                 OrchidToken.LAngleEquals,

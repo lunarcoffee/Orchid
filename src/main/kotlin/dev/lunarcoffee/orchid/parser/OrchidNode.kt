@@ -64,6 +64,9 @@ sealed class OrchidNode : Node {
     class BitRShift(left: Expression, right: Expression) : BinOp(left, right, ">>")
     class BitRShiftPad(left: Expression, right: Expression) : BinOp(left, right, ">>>")
 
+    class ArrayRange(left: Expression, right: Expression) :
+        BinOp(left, right, "..", Type(ScopedName(listOf("Array")), true, listOf(Type.number)))
+
     // [repr] is unused; 'Math.pow' is generated instead for higher compatibility.
     class Exponent(left: Expression, right: Expression) : BinOp(left, right, "")
 
