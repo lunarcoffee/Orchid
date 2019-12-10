@@ -50,9 +50,13 @@ sealed class OrchidNode : Node {
     class Multiply(left: Expression, right: Expression) : BinOp(left, right, "*")
     class Divide(left: Expression, right: Expression) : BinOp(left, right, "/")
     class Modulo(left: Expression, right: Expression) : BinOp(left, right, "%")
+
     class BitAnd(left: Expression, right: Expression) : BinOp(left, right, "&")
     class BitXor(left: Expression, right: Expression) : BinOp(left, right, "^")
     class BitOr(left: Expression, right: Expression) : BinOp(left, right, "|")
+    class BitLShift(left: Expression, right: Expression) : BinOp(left, right, "<<")
+    class BitRShift(left: Expression, right: Expression) : BinOp(left, right, ">>")
+    class BitRShiftPad(left: Expression, right: Expression) : BinOp(left, right, ">>>")
 
     // [repr] is unused; 'Math.pow' is generated instead for higher compatibility.
     class Exponent(left: Expression, right: Expression) : BinOp(left, right, "")

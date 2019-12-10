@@ -32,8 +32,6 @@ class OrchidLexer(file: File) : Lexer {
             ')' -> OrchidToken.RParen
             '[' -> OrchidToken.LBracket
             ']' -> OrchidToken.RBracket
-            '<' -> ifNextChar('=', OrchidToken.LAngleEquals, OrchidToken.LAngle)
-            '>' -> ifNextChar('=', OrchidToken.RAngleEquals, OrchidToken.RAngle)
             '+' -> OrchidToken.Plus
             '-' -> OrchidToken.Dash
             '*' -> ifNextChar('*', OrchidToken.DoubleAsterisk, OrchidToken.Asterisk)
@@ -51,6 +49,20 @@ class OrchidLexer(file: File) : Lexer {
                     advance()
                 next()
             }
+            '<' -> ifNextChar(
+                '=',
+                OrchidToken.LAngleEquals,
+                ifNextChar('<', OrchidToken.DoubleLAngle, OrchidToken.LAngle)
+            )
+            '>' -> ifNextChar(
+                '=',
+                OrchidToken.RAngleEquals,
+                ifNextChar(
+                    '>',
+                    OrchidToken.DoubleRAngle,
+                    ifNextChar('|', OrchidToken.RAnglePipe, OrchidToken.RAngle)
+                )
+            )
             else -> exitWithMessage("Syntax: unexpected character '$curChar'!", 2)
         }.also { advance() }
     }
