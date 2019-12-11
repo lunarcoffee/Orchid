@@ -1,5 +1,6 @@
 package dev.lunarcoffee.orchid.parser.lexer
 
+import dev.lunarcoffee.orchid.parser.lexer.OrchidToken.*
 import dev.lunarcoffee.orchid.util.SafeFileReader
 import dev.lunarcoffee.orchid.util.exitWithMessage
 import java.io.File
@@ -19,54 +20,42 @@ class OrchidLexer(file: File) : Lexer {
 
         return when (curChar) {
             in 'a'..'z', in 'A'..'Z', '_' -> readIdOrKeywordToken()
-            in '0'..'9' -> OrchidToken.NumberLiteral(readNumber())
-            '"' -> OrchidToken.StringLiteral(readString())
-            ':' -> OrchidToken.Colon
-            '.' -> OrchidToken.Dot
-            ',' -> OrchidToken.Comma
-            ';' -> OrchidToken.Terminator
-            '{' -> OrchidToken.LBrace
-            '}' -> OrchidToken.RBrace
-            '(' -> OrchidToken.LParen
-            ')' -> OrchidToken.RParen
-            '[' -> OrchidToken.LBracket
-            ']' -> OrchidToken.RBracket
-            '+' -> OrchidToken.Plus
-            '-' -> ifNextChar('>', OrchidToken.RArrow, OrchidToken.Dash)
-            '*' -> ifNextChar('*', OrchidToken.DoubleAsterisk, OrchidToken.Asterisk)
-            '/' -> OrchidToken.Slash
-            '%' -> OrchidToken.Percent
-            '&' -> ifNextChar('&', OrchidToken.DoubleAmpersand, OrchidToken.Ampersand)
-            '^' -> OrchidToken.Caret
-            '|' -> ifNextChar('|', OrchidToken.DoublePipe, OrchidToken.Pipe)
-            '~' -> OrchidToken.Tilde
-            '!' -> ifNextChar('=', OrchidToken.BangEquals, OrchidToken.Bang)
-            '\u0000' -> OrchidToken.EOF
+            in '0'..'9' -> NumberLiteral(readNumber())
+            '"' -> StringLiteral(readString())
+            ':' -> Colon
+            '.' -> Dot
+            ',' -> Comma
+            ';' -> Terminator
+            '{' -> LBrace
+            '}' -> RBrace
+            '(' -> LParen
+            ')' -> RParen
+            '[' -> LBracket
+            ']' -> RBracket
+            '+' -> Plus
+            '-' -> ifNextChar('>', RArrow, Dash)
+            '*' -> ifNextChar('*', DoubleAsterisk, Asterisk)
+            '/' -> Slash
+            '%' -> Percent
+            '&' -> ifNextChar('&', DoubleAmpersand, Ampersand)
+            '^' -> Caret
+            '|' -> ifNextChar('|', DoublePipe, Pipe)
+            '~' -> Tilde
+            '!' -> ifNextChar('=', BangEquals, Bang)
+            '\u0000' -> EOF
             ' ', '\n' -> advance().run { next() }.also { advance(back = true) }
+            '=' -> ifNextChar('=', DoubleEquals, ifNextChar('.', EqualsDot, Equals))
+            '<' -> ifNextChar('=', LAngleEquals, ifNextChar('<', DoubleLAngle, LAngle))
+            '>' -> ifNextChar(
+                '=',
+                RAngleEquals,
+                ifNextChar('>', DoubleRAngle, ifNextChar('|', RAnglePipe, RAngle))
+            )
             '#' -> {
                 while (curChar != '\n')
                     advance()
                 next()
             }
-            '=' -> ifNextChar(
-                '=',
-                OrchidToken.DoubleEquals,
-                ifNextChar('.', OrchidToken.EqualsDot, OrchidToken.Equals)
-            )
-            '<' -> ifNextChar(
-                '=',
-                OrchidToken.LAngleEquals,
-                ifNextChar('<', OrchidToken.DoubleLAngle, OrchidToken.LAngle)
-            )
-            '>' -> ifNextChar(
-                '=',
-                OrchidToken.RAngleEquals,
-                ifNextChar(
-                    '>',
-                    OrchidToken.DoubleRAngle,
-                    ifNextChar('|', OrchidToken.RAnglePipe, OrchidToken.RAngle)
-                )
-            )
             else -> exitWithMessage("Syntax: unexpected character '$curChar'!", 2)
         }.also { advance() }
     }
@@ -114,7 +103,7 @@ class OrchidLexer(file: File) : Lexer {
             advance()
         }
         advance(back = true)
-        return keywords.getOrElse(res) { OrchidToken.ID(res) }
+        return keywords.getOrElse(res) { ID(res) }
     }
 
     private fun advance(back: Boolean = false) {
@@ -124,15 +113,15 @@ class OrchidLexer(file: File) : Lexer {
 
     companion object {
         private val keywords = mapOf(
-            "var" to OrchidToken.KVar,
-            "func" to OrchidToken.KFunc,
-            "return" to OrchidToken.KReturn,
-            "if" to OrchidToken.KIf,
-            "else" to OrchidToken.KElse,
-            "true" to OrchidToken.KTrue,
-            "false" to OrchidToken.KFalse,
-            "when" to OrchidToken.KWhen,
-            "in" to OrchidToken.KIn
+            "var" to KVar,
+            "func" to KFunc,
+            "return" to KReturn,
+            "if" to KIf,
+            "else" to KElse,
+            "true" to KTrue,
+            "false" to KFalse,
+            "when" to KWhen,
+            "in" to KIn
         )
     }
 }

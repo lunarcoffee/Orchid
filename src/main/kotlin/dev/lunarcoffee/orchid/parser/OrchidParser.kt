@@ -242,7 +242,6 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                     exprs += expression()
                     next = lexer.peek()
                 }
-
                 expectToken<OrchidToken.RArrow>()
                 OrchidNode.WhenEqBranch(exprs, statement())
             }

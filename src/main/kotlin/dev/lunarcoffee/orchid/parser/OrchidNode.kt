@@ -49,7 +49,10 @@ sealed class OrchidNode : Node {
         val right: Expression,
         val repr: String,
         type: Type? = null
-    ) : Expression(type)
+    ) : Expression(type) {
+
+        var assignment = false
+    }
 
     class Plus(left: Expression, right: Expression) : BinOp(left, right, "+")
     class Minus(left: Expression, right: Expression) : BinOp(left, right, "-")
