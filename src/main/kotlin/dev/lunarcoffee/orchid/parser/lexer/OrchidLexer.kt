@@ -121,7 +121,7 @@ class OrchidLexer(file: File) : Lexer {
             "true" to KTrue,
             "false" to KFalse,
             "when" to KWhen,
-            "in" to KIn
+            "in" to In
         )
     }
 }

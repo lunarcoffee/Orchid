@@ -83,6 +83,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.FunctionCall -> functionCall(expr)
             is OrchidNode.BoolOp -> boolOp(expr)
             is OrchidNode.ArrayRange -> arrayRange(expr)
+            is OrchidNode.BoolIn -> boolIn(expr)
             is OrchidNode.BinOp -> binOp(expr)
             is OrchidNode.BoolNot -> boolNot(expr)
             is OrchidNode.UnaryOp -> expression(expr.operand)
@@ -102,7 +103,20 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     private fun arrayRange(expr: OrchidNode.ArrayRange) {
         binOp(expr)
         if (getExprType(expr.left) != OrchidNode.Type.number)
-            exitWithMessage("Semantic: operator '..' can only be applied to 'Number's!", 4)
+            exitWithMessage("Semantic: operator '..' must be applied to 'Number's!", 4)
+    }
+
+    private fun boolIn(expr: OrchidNode.BoolIn) {
+        expression(expr.left)
+        expression(expr.right)
+
+        val leftType = getExprType(expr.left)
+        val rightType = getExprType(expr.right)
+
+        if (rightType.name.parts[0] != "Array")
+            exitWithMessage("Semantic: operator 'in' right side must be an array!", 4)
+        if (leftType != rightType.params?.get(0))
+            exitWithMessage("Semantic: operator 'in' must be applied to 'T' and 'Array<T>'!", 4)
     }
 
     private fun binOp(expr: OrchidNode.BinOp) {

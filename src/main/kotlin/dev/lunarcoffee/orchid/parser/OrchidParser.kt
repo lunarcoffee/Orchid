@@ -90,6 +90,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 OrchidToken.DoubleAmpersand -> OrchidNode.BoolAnd(left, right)
                 OrchidToken.DoublePipe -> OrchidNode.BoolOr(left, right)
                 OrchidToken.EqualsDot -> OrchidNode.ArrayRange(left, right)
+                OrchidToken.In -> OrchidNode.BoolIn(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }
             next = lexer.peek()
@@ -227,7 +228,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 expectToken<OrchidToken.RArrow>()
                 OrchidNode.WhenElseBranch(statement())
             }
-            is OrchidToken.KIn -> {
+            is OrchidToken.In -> {
                 lexer.next()
                 val arrExpr = expression()
                 expectToken<OrchidToken.RArrow>()

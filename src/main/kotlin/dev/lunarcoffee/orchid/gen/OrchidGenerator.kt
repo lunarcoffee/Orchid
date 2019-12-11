@@ -81,6 +81,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
                 val right = expression(expr.right)
                 "(Object.keys(new Array(($left)-($right))).map(function(x){return x+$left}))"
             }
+            is OrchidNode.BoolIn -> "${expression(expr.right)}.includes(${expression(expr.left)})"
             is OrchidNode.BinOp -> {
                 val left = expression(expr.left)
                 val right = expression(expr.right)

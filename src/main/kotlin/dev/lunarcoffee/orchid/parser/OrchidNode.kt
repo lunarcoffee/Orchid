@@ -82,6 +82,7 @@ sealed class OrchidNode : Node {
     class BoolGreater(left: Expression, right: Expression) : CondOp(left, right, ">")
     class BoolLessEq(left: Expression, right: Expression) : CondOp(left, right, "<=")
     class BoolGreaterEq(left: Expression, right: Expression) : CondOp(left, right, ">=")
+    class BoolIn(left: Expression, right: Expression) : CondOp(left, right, "")
 
     open class BoolOp(left: Expression, right: Expression, repr: String) : CondOp(left, right, repr)
     class BoolAnd(left: Expression, right: Expression) : BoolOp(left, right, "&&")
