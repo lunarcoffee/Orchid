@@ -110,6 +110,7 @@ sealed class OrchidNode : Node {
             val string = Type(ScopedName(listOf("String")))
             val boolean = Type(ScopedName(listOf("Boolean")))
             val any = Type(ScopedName(listOf("Any")))
+            val void = Type(ScopedName(listOf("Void")))
 
             fun buildArray(type: Type) = Type(ScopedName(listOf("Array")), true, listOf(type))
         }

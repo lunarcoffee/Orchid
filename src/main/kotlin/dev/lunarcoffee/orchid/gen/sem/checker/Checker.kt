@@ -7,13 +7,6 @@ import dev.lunarcoffee.orchid.util.exitWithMessage
 abstract class Checker {
     abstract val symbols: SymbolTable
 
-    /*
-     * analyzer will traverse through each node and call visitors for each node
-     * checkers should not traverse through nodes
-     *
-     * TODO: name (typename, varname), type, argument length,
-     */
-
     open fun functionDefinition(func: OrchidNode.FunctionDefinition) {}
     open fun varDecl(decl: OrchidNode.VarDecl) {}
     open fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {}

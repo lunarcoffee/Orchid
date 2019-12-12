@@ -30,7 +30,8 @@ func getNumArr(): Array<Number> {
     var arr: Array<Number> = []Number{number, 2 & 1, 4 + +"5"};
 
     {
-        arr = number + 1=.number + 4;
+        number >|= 3;
+        arr = number=.number + 3;
         var a: Number = 1;
         arr = []Number{a, number, +"339" >| 3};
     }

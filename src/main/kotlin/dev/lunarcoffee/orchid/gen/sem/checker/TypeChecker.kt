@@ -5,7 +5,6 @@ import dev.lunarcoffee.orchid.gen.sem.SymbolTable
 import dev.lunarcoffee.orchid.parser.OrchidNode
 import dev.lunarcoffee.orchid.util.exitWithMessage
 
-// TODO: Check that function returns its specified type (and not nothing).
 class TypeChecker(override val symbols: SymbolTable) : Checker() {
     override fun varDecl(decl: OrchidNode.VarDecl) {
         decl.value?.apply { exitNotMatching(exprType(), decl.type) }

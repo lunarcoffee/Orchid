@@ -32,25 +32,26 @@ class OrchidLexer(file: File) : Lexer {
             ')' -> RParen
             '[' -> LBracket
             ']' -> RBracket
-            '+' -> Plus
-            '-' -> ifNextChar('>', RArrow, Dash)
-            '*' -> ifNextChar('*', DoubleAsterisk, Asterisk)
-            '/' -> Slash
-            '%' -> Percent
-            '&' -> ifNextChar('&', DoubleAmpersand, Ampersand)
-            '^' -> Caret
-            '|' -> ifNextChar('|', DoublePipe, Pipe)
+            '+' -> Plus().assignment()
+            '-' -> ifNextChar('>', RArrow, Dash()).assignment()
+            '*' -> ifNextChar('*', DoubleAsterisk(), Asterisk()).assignment()
+            '/' -> Slash().assignment()
+            '%' -> Percent().assignment()
+            '&' -> ifNextChar('&', DoubleAmpersand(), Ampersand()).assignment()
+            '^' -> Caret().assignment()
+            '|' -> ifNextChar('|', DoublePipe(), Pipe()).assignment()
             '~' -> Tilde
-            '!' -> ifNextChar('=', BangEquals, Bang)
+            '!' -> ifNextChar('=', BangEquals(), Bang).assignment()
             '\u0000' -> EOF
             ' ', '\n' -> advance().run { next() }.also { advance(back = true) }
-            '=' -> ifNextChar('=', DoubleEquals, ifNextChar('.', EqualsDot, Equals))
-            '<' -> ifNextChar('=', LAngleEquals, ifNextChar('<', DoubleLAngle, LAngle))
+            '=' -> ifNextChar('=', DoubleEquals(), ifNextChar('.', EqualsDot(), Equals))
+            '<' -> ifNextChar('<', DoubleLAngle(), ifNextChar('=', LAngleEquals(), LAngle))
+                .assignment()
             '>' -> ifNextChar(
-                '=',
-                RAngleEquals,
-                ifNextChar('>', DoubleRAngle, ifNextChar('|', RAnglePipe, RAngle))
-            )
+                '>',
+                DoubleRAngle(),
+                ifNextChar('|', RAnglePipe(), ifNextChar('=', RAngleEquals(), RAngle))
+            ).assignment()
             '#' -> {
                 while (curChar != '\n')
                     advance()
@@ -68,6 +69,18 @@ class OrchidLexer(file: File) : Lexer {
             return ifTrue
         advance(back = true)
         return ifFalse
+    }
+
+    private fun Token.assignment(): Token {
+        if (this !is Operator)
+            return this
+
+        advance()
+        if (curChar == '=')
+            assignment = true
+        else
+            advance(back = true)
+        return this
     }
 
     private fun readNumber(): Double {
@@ -121,7 +134,7 @@ class OrchidLexer(file: File) : Lexer {
             "true" to KTrue,
             "false" to KFalse,
             "when" to KWhen,
-            "in" to In
+            "in" to In()
         )
     }
 }

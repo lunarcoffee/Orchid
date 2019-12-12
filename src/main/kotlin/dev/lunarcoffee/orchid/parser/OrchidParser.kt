@@ -14,8 +14,8 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         while (next != OrchidToken.EOF) {
             when (next) {
-                OrchidToken.KVar -> runnables += variableDeclaration()
-                OrchidToken.KFunc -> decls += functionDeclaration()
+                is OrchidToken.KVar -> runnables += variableDeclaration()
+                is OrchidToken.KFunc -> decls += functionDeclaration()
                 else -> runnables += statement()
             }
             next = lexer.peek()
@@ -69,30 +69,33 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             val right = expression(nextPrecedence)
 
             left = when (next) {
-                OrchidToken.Plus -> OrchidNode.Plus(left, right)
-                OrchidToken.Dash -> OrchidNode.Minus(left, right)
-                OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
-                OrchidToken.Slash -> OrchidNode.Divide(left, right)
-                OrchidToken.Percent -> OrchidNode.Modulo(left, right)
-                OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
-                OrchidToken.Caret -> OrchidNode.BitXor(left, right)
-                OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
-                OrchidToken.DoubleLAngle -> OrchidNode.BitLShift(left, right)
-                OrchidToken.DoubleRAngle -> OrchidNode.BitRShift(left, right)
-                OrchidToken.RAnglePipe -> OrchidNode.BitRShiftPad(left, right)
-                OrchidToken.DoubleAsterisk -> OrchidNode.Exponent(left, right)
-                OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
-                OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
-                OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)
-                OrchidToken.RAngle -> OrchidNode.BoolGreater(left, right)
-                OrchidToken.LAngleEquals -> OrchidNode.BoolLessEq(left, right)
-                OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
-                OrchidToken.DoubleAmpersand -> OrchidNode.BoolAnd(left, right)
-                OrchidToken.DoublePipe -> OrchidNode.BoolOr(left, right)
-                OrchidToken.EqualsDot -> OrchidNode.ArrayRange(left, right)
-                OrchidToken.In -> OrchidNode.BoolIn(left, right)
+                is OrchidToken.Plus -> OrchidNode.Plus(left, right)
+                is OrchidToken.Dash -> OrchidNode.Minus(left, right)
+                is OrchidToken.Asterisk -> OrchidNode.Multiply(left, right)
+                is OrchidToken.Slash -> OrchidNode.Divide(left, right)
+                is OrchidToken.Percent -> OrchidNode.Modulo(left, right)
+                is OrchidToken.Ampersand -> OrchidNode.BitAnd(left, right)
+                is OrchidToken.Caret -> OrchidNode.BitXor(left, right)
+                is OrchidToken.Pipe -> OrchidNode.BitOr(left, right)
+                is OrchidToken.DoubleLAngle -> OrchidNode.BitLShift(left, right)
+                is OrchidToken.DoubleRAngle -> OrchidNode.BitRShift(left, right)
+                is OrchidToken.RAnglePipe -> OrchidNode.BitRShiftPad(left, right)
+                is OrchidToken.DoubleAsterisk -> OrchidNode.Exponent(left, right)
+                is OrchidToken.DoubleEquals -> OrchidNode.BoolEq(left, right)
+                is OrchidToken.BangEquals -> OrchidNode.BoolNotEq(left, right)
+                is OrchidToken.LAngle -> OrchidNode.BoolLess(left, right)
+                is OrchidToken.RAngle -> OrchidNode.BoolGreater(left, right)
+                is OrchidToken.LAngleEquals -> OrchidNode.BoolLessEq(left, right)
+                is OrchidToken.RAngleEquals -> OrchidNode.BoolGreaterEq(left, right)
+                is OrchidToken.DoubleAmpersand -> OrchidNode.BoolAnd(left, right)
+                is OrchidToken.DoublePipe -> OrchidNode.BoolOr(left, right)
+                is OrchidToken.EqualsDot -> OrchidNode.ArrayRange(left, right)
+                is OrchidToken.In -> OrchidNode.BoolIn(left, right)
                 else -> exitWithMessage("Syntax: unexpected operator!", 2)
             }
+
+            if (next.assignment)
+                (left as OrchidNode.BinOp).assignment = true
             next = lexer.peek()
         }
         return left
@@ -100,16 +103,16 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
     private fun expressionAtom(): OrchidNode.Expression {
         return when (val next = lexer.next()) {
-            OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
+            is OrchidToken.LParen -> expression().also { expectToken<OrchidToken.RParen>() }
             is OrchidToken.NumberLiteral -> OrchidNode.NumberLiteral(next.value)
             is OrchidToken.StringLiteral -> OrchidNode.StringLiteral(next.value)
-            OrchidToken.KTrue -> OrchidNode.BoolTrue
-            OrchidToken.KFalse -> OrchidNode.BoolFalse
-            OrchidToken.LBracket -> arrayLiteral()
-            OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
-            OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
-            OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
-            OrchidToken.Bang -> OrchidNode.BoolNot(expressionAtom())
+            is OrchidToken.KTrue -> OrchidNode.BoolTrue
+            is OrchidToken.KFalse -> OrchidNode.BoolFalse
+            is OrchidToken.LBracket -> arrayLiteral()
+            is OrchidToken.Dash -> OrchidNode.UnaryMinus(expressionAtom())
+            is OrchidToken.Plus -> OrchidNode.UnaryPlus(expressionAtom())
+            is OrchidToken.Tilde -> OrchidNode.BitComplement(expressionAtom())
+            is OrchidToken.Bang -> OrchidNode.BoolNot(expressionAtom())
             is OrchidToken.ID -> {
                 val name = scopedName(next.value)
                 when (lexer.peek()) {
@@ -191,7 +194,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         expectToken<OrchidToken.RParen>()
 
         val body = statement()
-        val elseStmt = if (lexer.peek() == OrchidToken.KElse) {
+        val elseStmt = if (lexer.peek() is OrchidToken.KElse) {
             lexer.next()
             statement()
         } else {

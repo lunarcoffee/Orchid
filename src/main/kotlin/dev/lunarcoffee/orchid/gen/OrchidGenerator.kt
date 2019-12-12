@@ -74,8 +74,13 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.BoolTrue -> "true"
             is OrchidNode.BoolFalse -> "false"
             is OrchidNode.VarRef -> expr.name.toString()
-            is OrchidNode.Exponent ->
-                "Math.pow(${expression(expr.left)},${expression(expr.right)})"
+            is OrchidNode.Exponent -> {
+                val leftExpr = expression(expr.left)
+                if (expr.assignment)
+                    "$leftExpr=Math.pow($leftExpr,${expression(expr.right)})"
+                else
+                    "Math.pow($leftExpr,${expression(expr.right)})"
+            }
             is OrchidNode.ArrayRange -> {
                 val left = expression(expr.left)
                 val right = expression(expr.right)
