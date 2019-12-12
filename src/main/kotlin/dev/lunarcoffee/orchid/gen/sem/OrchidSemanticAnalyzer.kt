@@ -1,7 +1,10 @@
 package dev.lunarcoffee.orchid.gen.sem
 
+import dev.lunarcoffee.orchid.gen.sem.checker.Checker
+import dev.lunarcoffee.orchid.gen.sem.checker.ListSizeChecker
+import dev.lunarcoffee.orchid.gen.sem.checker.NameChecker
+import dev.lunarcoffee.orchid.gen.sem.checker.TypeChecker
 import dev.lunarcoffee.orchid.parser.OrchidNode
-import dev.lunarcoffee.orchid.util.exitWithMessage
 
 class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAnalyzer {
     private val symbols = SymbolTable()
@@ -17,23 +20,15 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun functionDefinition(decl: OrchidNode.FunctionDefinition) {
-        // Check the argument types, return type, and statements.
-        for (type in decl.args.values)
-            checkType(type)
-        checkType(decl.returnType)
-
-        // Put function arguments in scope before checking semantics of body.
         newScope {
             for ((name, type) in decl.args)
                 symbols
                     .addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
+            check { functionDefinition(decl) }
             for (statement in decl.body)
                 statement(statement, if (statement is OrchidNode.Return) decl else null)
         }
-
-        symbols.addSymbol(
-            OrchidSymbol.FuncSymbol(decl, decl.args.values.toList(), scope)
-        )
+        symbols.addSymbol(OrchidSymbol.FuncSymbol(decl, decl.args.values.toList(), scope))
     }
 
     private fun statement(
@@ -51,87 +46,41 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun variableDeclaration(stmt: OrchidNode.VarDecl) {
-        // Check the initializer and type.
-        if (stmt.value != null) {
-            expression(stmt.value)
-
-            // Check type of initializer expression and type of variable.
-            val exprType = getExprType(stmt.value)
-            if (exprType != stmt.type)
-                exitWithMessage("Semantic: can't assign '$exprType' to '${stmt.type}'!", 4)
-        }
-
-        checkType(stmt.type)
+        check { varDecl(stmt) }
         symbols.addSymbol(OrchidSymbol.VarSymbol(stmt, scope))
     }
 
     private fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {
+        check { returnStatement(stmt, func) }
         expression(stmt.value)
-
-        // Check that the return expression type matches the function's return type.
-        val exprType = getExprType(stmt.value)
-        if (exprType != func.returnType)
-            exitWithMessage("Semantic: can't return '$exprType' as '${func.returnType}'!", 4)
     }
 
     private fun expression(expr: OrchidNode.Expression) {
         when (expr) {
             is OrchidNode.ArrayLiteral -> arrayLiteral(expr)
-            is OrchidNode.VarRef -> if (!symbols.isDefined(expr.name))
-                exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
             is OrchidNode.Assignment -> assignment(expr)
             is OrchidNode.FunctionCall -> functionCall(expr)
-            is OrchidNode.BoolOp -> boolOp(expr)
-            is OrchidNode.ArrayRange -> arrayRange(expr)
-            is OrchidNode.BoolIn -> boolIn(expr)
+            is OrchidNode.ArrayRange -> binOp(expr)
+            is OrchidNode.CondOp -> condOp(expr)
             is OrchidNode.BinOp -> binOp(expr)
-            is OrchidNode.BoolNot -> boolNot(expr)
-            is OrchidNode.UnaryOp -> expression(expr.operand)
+            is OrchidNode.UnaryOp -> unaryOp(expr)
         }
     }
 
-    private fun boolOp(expr: OrchidNode.BoolOp) {
-        binOp(expr)
-        if (getExprType(expr.left) != OrchidNode.Type.boolean) {
-            exitWithMessage(
-                "Semantic: operator '${expr.repr}' can only be applied to 'Boolean's!",
-                4
-            )
-        }
-    }
-
-    private fun arrayRange(expr: OrchidNode.ArrayRange) {
-        binOp(expr)
-        if (getExprType(expr.left) != OrchidNode.Type.number)
-            exitWithMessage("Semantic: operator '..' must be applied to 'Number's!", 4)
-    }
-
-    private fun boolIn(expr: OrchidNode.BoolIn) {
+    private fun condOp(expr: OrchidNode.CondOp) {
+        check { condOp(expr) }
         expression(expr.left)
         expression(expr.right)
-
-        val leftType = getExprType(expr.left)
-        val rightType = getExprType(expr.right)
-
-        if (rightType.name.parts[0] != "Array")
-            exitWithMessage("Semantic: operator 'in' right side must be an array!", 4)
-        if (leftType != rightType.params?.get(0))
-            exitWithMessage("Semantic: operator 'in' must be applied to 'T' and 'Array<T>'!", 4)
     }
 
     private fun binOp(expr: OrchidNode.BinOp) {
+        check { binOp(expr) }
         expression(expr.left)
         expression(expr.right)
-
-        // Ensure binary operator operand types match.
-        if (getExprType(expr.left) != getExprType(expr.right))
-            exitWithMessage("Semantic: binary operator operand types do not match!", 4)
     }
 
-    private fun boolNot(expr: OrchidNode.BoolNot) {
-        val exprType = getExprType(expr.operand)
-        if (exprType != OrchidNode.Type.boolean)
-            exitWithMessage("Semantic: operator '!' cannot be applied to '$exprType'!", 4)
+    private fun unaryOp(expr: OrchidNode.UnaryOp) {
+        check { unaryOp(expr) }
         expression(expr.operand)
     }
 
@@ -147,8 +96,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         func: OrchidNode.FunctionDefinition? = null
     ) {
         expression(stmt.condition)
-        if (getExprType(stmt.condition) != OrchidNode.Type.boolean)
-            exitWithMessage("Semantic: if statement can only contain a 'Boolean' condition!", 4)
+        check { ifStatement(stmt) }
 
         newScope { statement(stmt.body, func) }
         if (stmt.elseStmt != null)
@@ -161,101 +109,39 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     ) {
         expression(stmt.expr)
         for (branch in stmt.branches)
-            whenBranch(branch, stmt.expr, func)
+            whenBranch(branch, stmt, func)
     }
 
     private fun whenBranch(
         branch: OrchidNode.WhenBranch,
-        cmpExpr: OrchidNode.Expression,
+        stmt: OrchidNode.WhenStatement,
         func: OrchidNode.FunctionDefinition? = null
     ) {
-        val cmpType = getExprType(cmpExpr)
-        when (branch) {
-            is OrchidNode.WhenEqBranch -> {
-                for (expr in branch.exprs)
-                    expression(expr)
-                if (branch.exprs.any { getExprType(it) != cmpType })
-                    exitWithMessage("Semantic: when statement can only compare '$cmpType'!", 4)
-            }
-            is OrchidNode.WhenInBranch -> {
-                expression(branch.expr)
-                val exprType = getExprType(branch.expr)
-                if (exprType.name.parts[0] != "Array")
-                    exitWithMessage("Semantic: when 'in' branch can only check arrays!", 4)
-            }
-        }
+        check { whenBranch(branch, stmt) }
         statement(branch.body, func)
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {
-        checkType(array.type!!)
-
-        // Check validity of each element and verify that each is the same type as the array.
-        for (element in array.values) {
+        check { arrayLiteral(array) }
+        for (element in array.values)
             expression(element)
-            val exprType = getExprType(element)
-            if (exprType != array.type.params!![0])
-                exitWithMessage("Semantic: '${array.type}' cannot contain '$exprType'!", 4)
-        }
     }
 
     private fun assignment(expr: OrchidNode.Assignment) {
-        if (!symbols.isDefined(expr.name))
-            exitWithMessage("Semantic: name '${expr.name}' is not defined!", 4)
-
-        // Compare types of the expression to assign and the entity to assign.
-        val symbol = symbols[expr.name]!!
-        val exprType = getExprType(expr.value)
-        if (exprType != symbol.type)
-            exitWithMessage("Semantic: can't assign '$exprType' to '${symbol.type}'!", 4)
-
+        check { assignment(expr) }
         expression(expr.value)
     }
 
     private fun functionCall(expr: OrchidNode.FunctionCall) {
-        // Check arguments.
+        check { functionCall(expr) }
         for (arg in expr.args)
             expression(arg)
-
-        // Don't check anything but argument validity for calls prefixed with "js."
-        if (expr.name.parts.first() == "js")
-            return
-
-        if (!symbols.isDefined(expr.name))
-            exitWithMessage("Semantic: function '${expr.name}' is not defined!", 4)
-
-        // Check parameter list sizes.
-        val given = expr.args.size
-        val expected = (symbols[expr.name] as? OrchidSymbol.FuncSymbol)?.args?.size
-        if (given != expected) {
-            exitWithMessage(
-                "Semantic: function '${expr.name}' " +
-                        "expects $expected arguments, $given given!",
-                4
-            )
-        }
     }
 
-    // Recursively validate existence of a type and its generic type parameters.
-    private fun checkType(type: OrchidNode.Type) {
-        if (!symbols.isDefined(type.name))
-            exitWithMessage("Semantic: type '${type.name}' is not defined!", 4)
-        type.params?.forEach { checkType(it) }
-    }
-
-    private fun getExprType(expr: OrchidNode.Expression): OrchidNode.Type {
-        return expr.type ?: when (expr) {
-            is OrchidNode.VarRef -> symbols[expr.name]?.type
-            is OrchidNode.FunctionCall -> symbols[expr.name]?.type
-            is OrchidNode.BinOp -> {
-                val typeLeft = getExprType(expr.left)
-                if (typeLeft != getExprType(expr.right))
-                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
-                typeLeft
-            }
-            is OrchidNode.UnaryOp -> getExprType(expr.operand)
-            else -> exitWithMessage("Semantic: unexpected expression!", 4)
-        }!!
+    private fun check(func: Checker.() -> Unit) {
+        val checkers = listOf(NameChecker(symbols), TypeChecker(symbols), ListSizeChecker(symbols))
+        for (checker in checkers)
+            checker.func()
     }
 
     private fun newScope(func: () -> Unit) {

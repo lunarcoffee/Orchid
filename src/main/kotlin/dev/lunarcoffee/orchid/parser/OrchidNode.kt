@@ -109,6 +109,9 @@ sealed class OrchidNode : Node {
             val number = Type(ScopedName(listOf("Number")))
             val string = Type(ScopedName(listOf("String")))
             val boolean = Type(ScopedName(listOf("Boolean")))
+            val any = Type(ScopedName(listOf("Any")))
+
+            fun buildArray(type: Type) = Type(ScopedName(listOf("Array")), true, listOf(type))
         }
     }
 

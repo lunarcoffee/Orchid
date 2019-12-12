@@ -1,5 +1,5 @@
 var i: Number;
-var j: Array<Number> = getNumArr;
+var j: Array<Number> = getNumArr();
 var s: String = "String";
 
 print("Orchid");
