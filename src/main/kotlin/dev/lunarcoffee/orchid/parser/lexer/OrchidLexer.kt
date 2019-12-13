@@ -45,12 +45,12 @@ class OrchidLexer(file: File) : Lexer {
             '\u0000' -> EOF
             ' ', '\n' -> advance().run { next() }.also { advance(back = true) }
             '=' -> ifNextChar('=', DoubleEquals(), ifNextChar('.', EqualsDot(), Equals))
-            '<' -> ifNextChar('<', DoubleLAngle(), ifNextChar('=', LAngleEquals(), LAngle))
+            '<' -> ifNextChar('<', DoubleLAngle(), ifNextChar('=', LAngleEquals(), LAngle()))
                 .assignment()
             '>' -> ifNextChar(
                 '>',
                 DoubleRAngle(),
-                ifNextChar('|', RAnglePipe(), ifNextChar('=', RAngleEquals(), RAngle))
+                ifNextChar('|', RAnglePipe(), ifNextChar('=', RAngleEquals(), RAngle()))
             ).assignment()
             '#' -> {
                 while (curChar != '\n')
@@ -134,6 +134,8 @@ class OrchidLexer(file: File) : Lexer {
             "true" to KTrue,
             "false" to KFalse,
             "when" to KWhen,
+            "for" to KFor,
+            "foreach" to KForEach,
             "in" to In()
         )
     }

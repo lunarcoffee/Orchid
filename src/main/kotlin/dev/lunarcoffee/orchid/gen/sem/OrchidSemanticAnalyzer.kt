@@ -42,6 +42,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.Scope -> scope(stmt, func)
             is OrchidNode.IfStatement -> ifStatement(stmt, func)
             is OrchidNode.WhenStatement -> whenStatement(stmt, func)
+            is OrchidNode.ForStatement -> forStatement(stmt)
+            is OrchidNode.ForEachStatement -> forEachStatement(stmt)
         }
     }
 
@@ -119,6 +121,33 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     ) {
         check { whenBranch(branch, stmt) }
         statement(branch.body, func)
+    }
+
+    private fun forStatement(
+        stmt: OrchidNode.ForStatement,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
+        expression(stmt.cmp)
+        statement(stmt.change, func)
+        statement(stmt.body, func)
+
+        newScope {
+            variableDeclaration(stmt.init)
+            check { forStatement(stmt) }
+        }
+    }
+
+    private fun forEachStatement(
+        stmt: OrchidNode.ForEachStatement,
+        func: OrchidNode.FunctionDefinition? = null
+    ) {
+        expression(stmt.expr)
+        statement(stmt.body, func)
+
+        newScope {
+            variableDeclaration(stmt.decl)
+            check { forEachStatement(stmt) }
+        }
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {

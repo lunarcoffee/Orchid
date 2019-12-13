@@ -159,6 +159,8 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.KReturn -> returnStatement()
             is OrchidToken.KIf -> ifStatement()
             is OrchidToken.KWhen -> whenStatement()
+            is OrchidToken.KFor -> forStatement()
+            is OrchidToken.KForEach -> forEachStatement()
             is OrchidToken.LBrace -> scope()
             else -> expression().also { expectToken<OrchidToken.Terminator>() }
         }
@@ -252,6 +254,33 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         }
     }
 
+    private fun forStatement(): OrchidNode.ForStatement {
+        expectToken<OrchidToken.KFor>()
+
+        expectToken<OrchidToken.LParen>()
+        val init = variableDeclaration()
+        val cmp = expression()
+        expectToken<OrchidToken.Terminator>()
+        val change = statement()
+        expectToken<OrchidToken.RParen>()
+
+        val body = statement()
+        return OrchidNode.ForStatement(init, cmp, change, body)
+    }
+
+    private fun forEachStatement(): OrchidNode.ForEachStatement {
+        expectToken<OrchidToken.KForEach>()
+
+        expectToken<OrchidToken.LParen>()
+        val decl = variableDeclaration()
+        val arrExpr = expression()
+        expectToken<OrchidToken.Terminator>()
+        expectToken<OrchidToken.RParen>()
+
+        val body = statement()
+        return OrchidNode.ForEachStatement(decl, arrExpr, body)
+    }
+
     private fun scope(): OrchidNode.Scope {
         expectToken<OrchidToken.LBrace>()
 
@@ -302,7 +331,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
                 typeParams += type()
 
                 // Support optional trailing comma.
-                if (lexer.peek() == OrchidToken.RAngle) {
+                if (lexer.peek() is OrchidToken.RAngle) {
                     lexer.next()
                     return OrchidNode.Type(baseType, true, typeParams)
                 }

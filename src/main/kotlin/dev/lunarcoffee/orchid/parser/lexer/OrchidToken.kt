@@ -16,8 +16,6 @@ sealed class OrchidToken(private val repr: String) : Token {
     object RParen : OrchidToken(")")
     object LBracket : OrchidToken("[")
     object RBracket : OrchidToken("]")
-    object LAngle : OrchidToken("<")
-    object RAngle : OrchidToken(">")
     object EOF : OrchidToken("<EOF>")
     object RArrow : OrchidToken("->")
 
@@ -35,6 +33,8 @@ sealed class OrchidToken(private val repr: String) : Token {
     class Ampersand : Operator("&", 7, false)
     class Caret : Operator("^", 6, false)
     class Pipe : Operator("|", 5, false)
+    class LAngle : Operator("<", 9, false)
+    class RAngle : Operator(">", 9, false)
     class DoubleLAngle : Operator("<<", 10, false)
     class DoubleRAngle : Operator(">>", 10, false)
     class RAnglePipe : Operator(">|", 10, false)
@@ -58,6 +58,8 @@ sealed class OrchidToken(private val repr: String) : Token {
     object KTrue : ID("true")
     object KFalse : ID("false")
     object KWhen : ID("when")
+    object KFor : ID("for")
+    object KForEach : ID("foreach")
 
     override fun toString() = repr
 }

@@ -26,7 +26,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.FunctionDefinition ->
                 "function ${decl.name}(${decl.args.keys.joinToString(",")})" +
                         "{${decl.body.joinToString("") { statement(it) }}}"
-            else -> exitWithMessage("Syntax: expected function definition!", 3)
+            else -> exitWithMessage("Syntax: expected top-level declaration!", 3)
         }.trimMargin()
     }
 
@@ -41,7 +41,10 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
                 "if(${expression(stmt.condition)})${statement(stmt.body)}" +
                         if (stmt.elseStmt != null) "else ${statement(stmt.elseStmt)}" else ""
             is OrchidNode.WhenStatement -> whenStatement(stmt)
-            else -> exitWithMessage("Syntax: expected variable declaration or return!", 3)
+            is OrchidNode.ForStatement -> "for(${statement(stmt.init)}${expression(stmt.cmp)};" +
+                    "${statement(stmt.change).dropLast(1)})${statement(stmt.body)}"
+            is OrchidNode.ForEachStatement -> forEachStatement(stmt)
+            else -> exitWithMessage("Syntax: expected statement!", 3)
         }
     }
 
@@ -64,6 +67,12 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.WhenElseBranch -> "else ${statement(branch.body)}"
             else -> exitWithMessage("Syntax: unexpected when branch!", 3)
         }
+    }
+
+    private fun forEachStatement(stmt: OrchidNode.ForEachStatement): String {
+        val declName = stmt.decl.name
+        return "var \$l=${expression(stmt.expr)};for(var $declName=0;$declName<\$l.length;i++)" +
+                statement(stmt.body)
     }
 
     private fun expression(expr: OrchidNode.Expression): String {
@@ -100,10 +109,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
                 else
                     "${expr.name}(${joinExpr(expr.args)})"
             }
-            else -> exitWithMessage(
-                "Syntax: expected number, string, array, variable, or function call!",
-                3
-            )
+            else -> exitWithMessage("Syntax: expected expression!", 3)
         }
     }
 

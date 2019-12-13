@@ -30,6 +30,16 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
         }
     }
 
+    override fun forStatement(stmt: OrchidNode.ForStatement) {
+        exitNotMatching(stmt.cmp.exprType(), OrchidNode.Type.boolean)
+    }
+
+    override fun forEachStatement(stmt: OrchidNode.ForEachStatement) {
+        exitNotMatching(stmt.decl.type, stmt.expr.exprType().params!![0])
+        if (stmt.decl.value != null)
+            exitWithMessage("Semantic: 'foreach' variable declaration cannot have value!", 4)
+    }
+
     override fun assignment(expr: OrchidNode.Assignment) {
         exitNotMatching(symbols[expr.name]?.type!!, expr.value.exprType())
     }
