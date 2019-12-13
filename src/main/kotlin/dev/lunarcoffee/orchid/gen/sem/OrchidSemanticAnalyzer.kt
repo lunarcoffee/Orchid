@@ -53,8 +53,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {
-        check { returnStatement(stmt, func) }
         expression(stmt.value)
+        check { returnStatement(stmt, func) }
     }
 
     private fun expression(expr: OrchidNode.Expression) {
@@ -66,24 +66,25 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.CondOp -> condOp(expr)
             is OrchidNode.BinOp -> binOp(expr)
             is OrchidNode.UnaryOp -> unaryOp(expr)
+            is OrchidNode.VarRef -> check { varRef(expr) }
         }
     }
 
     private fun condOp(expr: OrchidNode.CondOp) {
-        check { condOp(expr) }
         expression(expr.left)
         expression(expr.right)
+        check { condOp(expr) }
     }
 
     private fun binOp(expr: OrchidNode.BinOp) {
-        check { binOp(expr) }
         expression(expr.left)
         expression(expr.right)
+        check { binOp(expr) }
     }
 
     private fun unaryOp(expr: OrchidNode.UnaryOp) {
-        check { unaryOp(expr) }
         expression(expr.operand)
+        check { unaryOp(expr) }
     }
 
     private fun scope(stmt: OrchidNode.Scope, func: OrchidNode.FunctionDefinition? = null) {
@@ -127,12 +128,11 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         stmt: OrchidNode.ForStatement,
         func: OrchidNode.FunctionDefinition? = null
     ) {
-        expression(stmt.cmp)
-        statement(stmt.change, func)
-        statement(stmt.body, func)
-
         newScope {
             variableDeclaration(stmt.init)
+            expression(stmt.cmp)
+            statement(stmt.change, func)
+            statement(stmt.body, func)
             check { forStatement(stmt) }
         }
     }
@@ -141,30 +141,29 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         stmt: OrchidNode.ForEachStatement,
         func: OrchidNode.FunctionDefinition? = null
     ) {
-        expression(stmt.expr)
-        statement(stmt.body, func)
-
         newScope {
             variableDeclaration(stmt.decl)
+            expression(stmt.expr)
+            statement(stmt.body, func)
             check { forEachStatement(stmt) }
         }
     }
 
     private fun arrayLiteral(array: OrchidNode.ArrayLiteral) {
-        check { arrayLiteral(array) }
         for (element in array.values)
             expression(element)
+        check { arrayLiteral(array) }
     }
 
     private fun assignment(expr: OrchidNode.Assignment) {
-        check { assignment(expr) }
         expression(expr.value)
+        check { assignment(expr) }
     }
 
     private fun functionCall(expr: OrchidNode.FunctionCall) {
-        check { functionCall(expr) }
         for (arg in expr.args)
             expression(arg)
+        check { functionCall(expr) }
     }
 
     private fun check(func: Checker.() -> Unit) {

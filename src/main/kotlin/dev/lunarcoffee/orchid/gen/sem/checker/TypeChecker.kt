@@ -25,7 +25,7 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
                 exitNotMatching(stmtType, expr.exprType())
             is OrchidNode.WhenInBranch -> exitNotMatching(
                 stmtType,
-                branch.expr.exprType().params!![0]
+                branch.expr.exprType().params?.get(0)
             )
         }
     }
@@ -35,7 +35,7 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
     }
 
     override fun forEachStatement(stmt: OrchidNode.ForEachStatement) {
-        exitNotMatching(stmt.decl.type, stmt.expr.exprType().params!![0])
+        exitNotMatching(stmt.decl.type, stmt.expr.exprType().params?.get(0))
         if (stmt.decl.value != null)
             exitWithMessage("Semantic: 'foreach' variable declaration cannot have value!", 4)
     }
@@ -55,7 +55,7 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
 
     override fun arrayLiteral(expr: OrchidNode.ArrayLiteral) {
         for (element in expr.values)
-            exitNotMatching(element.exprType(), expr.type?.params!![0])
+            exitNotMatching(element.exprType(), expr.type?.params?.get(0))
     }
 
     override fun binOp(expr: OrchidNode.BinOp) {
@@ -67,7 +67,7 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
     override fun condOp(expr: OrchidNode.CondOp) {
         val leftType = expr.left.exprType()
         if (expr is OrchidNode.BoolIn)
-            return exitNotMatching(leftType, expr.right.exprType().params!![0])
+            return exitNotMatching(leftType, expr.right.exprType().params?.get(0))
 
         binOp(expr)
         if (expr is OrchidNode.BoolOp)
@@ -79,7 +79,9 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
             exitNotMatching(expr.operand.exprType(), OrchidNode.Type.boolean)
     }
 
-    private fun exitNotMatching(t1: OrchidNode.Type, t2: OrchidNode.Type) {
+    private fun exitNotMatching(t1: OrchidNode.Type?, t2: OrchidNode.Type?) {
+        if (t1 == null || t2 == null)
+            exitWithMessage("Semantic: incorrect types!", 4)
         if (t1 != OrchidNode.Type.any && t2 != OrchidNode.Type.any && t1 != t2)
             exitWithMessage("Semantic: '$t1' does not match '$t2'!", 4)
     }

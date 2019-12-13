@@ -70,8 +70,9 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
     }
 
     private fun forEachStatement(stmt: OrchidNode.ForEachStatement): String {
-        val declName = stmt.decl.name
-        return "var \$l=${expression(stmt.expr)};for(var $declName=0;$declName<\$l.length;i++)" +
+        val name = stmt.decl.name
+        return "var \$l=${expression(stmt.expr)};" +
+                "for(var \$i=0,$name=\$l[0];\$i<\$l.length;\$i++,$name=\$l[\$i])" +
                 statement(stmt.body)
     }
 
@@ -93,7 +94,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.ArrayRange -> {
                 val left = expression(expr.left)
                 val right = expression(expr.right)
-                "(Object.keys(new Array(($left)-($right))).map(function(x){return x+$left}))"
+                "[...new Array(($right)-($left)).keys()].map(function(x){return x+$left})"
             }
             is OrchidNode.BoolIn -> "${expression(expr.right)}.includes(${expression(expr.left)})"
             is OrchidNode.BinOp -> {
