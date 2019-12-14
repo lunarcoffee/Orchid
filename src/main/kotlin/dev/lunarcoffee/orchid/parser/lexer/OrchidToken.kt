@@ -60,6 +60,7 @@ sealed class OrchidToken(private val repr: String) : Token {
     object KWhen : ID("when")
     object KFor : ID("for")
     object KForEach : ID("foreach")
+    object KWhile : ID("while")
 
     override fun toString() = repr
 }

@@ -61,6 +61,11 @@ else {
     print(a);
 }
 
+var q: Number = 1;
+while (q % 5 != 0;)
+    q += 3;
+print(q);
+
 func getNumber(arg: Number): Number {
     return arg + 53942.233 ** 0.1;
 }

@@ -6,6 +6,13 @@ import dev.lunarcoffee.orchid.parser.lexer.OrchidLexer
 import dev.lunarcoffee.orchid.util.exitWithMessage
 import java.io.File
 
+/*
+ * TODO:
+ *  - Implement control flow analysis to check that all paths return in functions.
+ *  - Implement extern declarations.
+ *  - Implement multi-file compilation, import system.
+ */
+
 fun main(args: Array<String>) {
     val input = args.firstOrNull() ?: exitWithMessage("Fatal: no input file specified!", 1)
     val output = args.getOrNull(1) ?: exitWithMessage("Fatal: no output file specified!", 1)

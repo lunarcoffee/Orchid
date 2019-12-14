@@ -10,8 +10,8 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
         decl.value?.apply { exitNotMatching(exprType(), decl.type) }
     }
 
-    override fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {
-        exitNotMatching(stmt.value.exprType(), func.returnType)
+    override fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition?) {
+        exitNotMatching(stmt.value.exprType(), func!!.returnType)
     }
 
     override fun ifStatement(stmt: OrchidNode.IfStatement) {
@@ -38,6 +38,10 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
         exitNotMatching(stmt.decl.type, stmt.expr.exprType().params?.get(0))
         if (stmt.decl.value != null)
             exitWithMessage("Semantic: 'foreach' variable declaration cannot have value!", 4)
+    }
+
+    override fun whileStatement(stmt: OrchidNode.WhileStatement) {
+        exitNotMatching(stmt.cmp.exprType(), OrchidNode.Type.boolean)
     }
 
     override fun assignment(expr: OrchidNode.Assignment) {

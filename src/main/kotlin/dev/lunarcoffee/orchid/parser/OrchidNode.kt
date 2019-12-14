@@ -38,6 +38,8 @@ sealed class OrchidNode : Node {
     class ForEachStatement(val decl: VarDecl, val expr: Expression, val body: Statement) :
         Statement()
 
+    class WhileStatement(val cmp: Expression, val body: Statement) : Statement()
+
     // [type] used in semantic analysis, if null it can be determined from the symbol table.
     open class Expression(val type: Type?) : Statement()
 

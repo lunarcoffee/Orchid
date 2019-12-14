@@ -44,6 +44,7 @@ class OrchidGenerator(override val parser: Parser, override val output: File) : 
             is OrchidNode.ForStatement -> "for(${statement(stmt.init)}${expression(stmt.cmp)};" +
                     "${statement(stmt.change).dropLast(1)})${statement(stmt.body)}"
             is OrchidNode.ForEachStatement -> forEachStatement(stmt)
+            is OrchidNode.WhileStatement -> "while(${expression(stmt.cmp)})${statement(stmt.body)}"
             else -> exitWithMessage("Syntax: expected statement!", 3)
         }
     }

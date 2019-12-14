@@ -161,6 +161,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.KWhen -> whenStatement()
             is OrchidToken.KFor -> forStatement()
             is OrchidToken.KForEach -> forEachStatement()
+            is OrchidToken.KWhile -> whileStatement()
             is OrchidToken.LBrace -> scope()
             else -> expression().also { expectToken<OrchidToken.Terminator>() }
         }
@@ -279,6 +280,18 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         val body = statement()
         return OrchidNode.ForEachStatement(decl, arrExpr, body)
+    }
+
+    private fun whileStatement(): OrchidNode.WhileStatement {
+        expectToken<OrchidToken.KWhile>()
+
+        expectToken<OrchidToken.LParen>()
+        val cmp = expression()
+        expectToken<OrchidToken.Terminator>()
+        expectToken<OrchidToken.RParen>()
+
+        val body = statement()
+        return OrchidNode.WhileStatement(cmp, body)
     }
 
     private fun scope(): OrchidNode.Scope {

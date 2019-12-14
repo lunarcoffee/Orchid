@@ -9,11 +9,12 @@ abstract class Checker {
 
     open fun functionDefinition(func: OrchidNode.FunctionDefinition) {}
     open fun varDecl(decl: OrchidNode.VarDecl) {}
-    open fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition) {}
+    open fun returnStatement(stmt: OrchidNode.Return, func: OrchidNode.FunctionDefinition?) {}
     open fun ifStatement(stmt: OrchidNode.IfStatement) {}
     open fun whenBranch(branch: OrchidNode.WhenBranch, stmt: OrchidNode.WhenStatement) {}
     open fun forStatement(stmt: OrchidNode.ForStatement) {}
     open fun forEachStatement(stmt: OrchidNode.ForEachStatement) {}
+    open fun whileStatement(stmt: OrchidNode.WhileStatement) {}
     open fun expression(expr: OrchidNode.Expression) {}
     open fun varRef(expr: OrchidNode.VarRef) {}
     open fun assignment(expr: OrchidNode.Assignment) {}
