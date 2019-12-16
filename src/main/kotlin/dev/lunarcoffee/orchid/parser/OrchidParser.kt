@@ -290,7 +290,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         expectToken<OrchidToken.RParen>()
 
         val body = statement()
-        return OrchidNode.ForEachStatement(OrchidNode.VarDecl(name, arrExpr), arrExpr, body)
+        return OrchidNode.ForEachStatement(OrchidNode.VarDecl(name, null), arrExpr, body)
     }
 
     private fun externStatement(): OrchidNode.ExternFunction {
@@ -316,7 +316,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         val returnType = type()
         expectToken<OrchidToken.Terminator>()
 
-        val mapArgs = args.withIndex().associate { (index, arg) -> index.toString() to arg }
+        val mapArgs = args.withIndex().associate { (index, arg) -> "\$$index" to arg }
         val func = OrchidNode.FunctionDefinition(name, mapArgs, emptyList(), returnType)
         return OrchidNode.ExternFunction(func)
     }

@@ -2,7 +2,6 @@ package dev.lunarcoffee.orchid.gen.sem
 
 import dev.lunarcoffee.orchid.gen.sem.checker.*
 import dev.lunarcoffee.orchid.parser.OrchidNode
-import dev.lunarcoffee.orchid.util.exitWithMessage
 
 class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAnalyzer {
     private val symbols = SymbolTable()
@@ -50,8 +49,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         }
     }
 
-    private fun variableDeclaration(stmt: OrchidNode.VarDecl) {
-        val typed = stmt.apply { type = if (type == null) value?.exprType() else type }
+    private fun variableDeclaration(stmt: OrchidNode.VarDecl, typeSpec: OrchidNode.Type? = null) {
+        val typed = stmt.apply { type = TypeInferrer(symbols).inferDecl(stmt) ?: typeSpec }
         check { varDecl(typed) }
         symbols.addSymbol(OrchidSymbol.VarSymbol(typed, scope))
     }
@@ -130,8 +129,8 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     private fun forEachStatement(stmt: OrchidNode.ForEachStatement) {
         newScope {
-            stmt.decl.type = stmt.expr.exprType().params!![0]
-            variableDeclaration(stmt.decl)
+            val iteratingVarType = TypeInferrer(symbols).inferExpr(stmt.expr).params?.get(0)
+            variableDeclaration(stmt.decl, iteratingVarType)
             expression(stmt.expr)
             statement(stmt.body)
             check { forEachStatement(stmt) }
@@ -190,21 +189,5 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         whenStmt = stmt
         analysis()
         whenStmt = null
-    }
-
-    private fun OrchidNode.Expression.exprType(): OrchidNode.Type {
-        return type ?: when (this) {
-            is OrchidNode.VarRef -> symbols[name]?.type
-            is OrchidNode.FunctionCall -> symbols[name]?.type
-            is OrchidNode.BinOp -> {
-                val typeLeft = left.exprType()
-                if (typeLeft != right.exprType())
-                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
-                typeLeft
-            }
-            is OrchidNode.UnaryOp -> operand.exprType()
-            is OrchidNode.Assignment -> value.exprType()
-            else -> exitWithMessage("Semantic: unexpected expression!", 4)
-        }!!
     }
 }
