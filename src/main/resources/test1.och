@@ -1,47 +1,47 @@
 var i: Number;
-var j: Array<Number> = getNumArr();
-var s: String = "String";
+var j = getNumArr();
+var s = "String";
 
 print("Orchid");
 print(s);
 s = "String again";
 print(s);
 
-var m: Number = getNumber(-1239.2) * 2 ** 5 ** 3 + 2;
-var k: Number = 3 + m * 2 / (1 - getNumber(3)) ** -2 ** 3;
+var m = getNumber(-1239.2) * 2 ** 5 ** 3 + 2;
+var k = 3 + m * 2 / (1 - getNumber(3)) ** -2 ** 3;
 
 when (s + "!") {
     "Number" -> print("number");
     "String" -> {
-        var a: Number = 1;
+        var a = 1;
         print(a);
     }
     "hello", "String again!", "a" -> print("string!");
     else -> print("error!");
 }
 
-for (var r: Number = 0; r <= 10; r += 1;) {
+for (var r = 0; r <= 10; r += 1;) {
     print(r);
     r += 1;
 }
 
-foreach (var d: Number; 3=.10;)
+foreach (var d; 3=.10;)
     print(d);
 
 # This is a comment!
 func print(msg: Any): Void {
-    extern func console.log(object: Any): Void;
+    extern func console.log(Any): Void;
     console.log(msg);
 }
 
 func getNumArr(): Array<Number> {
-    var number: Number = 1;
-    var arr: Array<Number> = []Number{number, 2 & 1, 4 + +"5"};
+    var number = 1;
+    var arr = []Number{number, 2 & 1, 4 + +"5"};
 
     {
         number >|= 3;
         arr = number=.number + 3;
-        var a: Number = 1;
+        var a = 1;
         arr = []Number{a, number, +"339" >| 3};
     }
 
@@ -52,17 +52,17 @@ func getNumArr(): Array<Number> {
     return arr;
 }
 
-var b: Boolean = false;
+var b = false;
 if (b || 100 in 1=.10)
-    var a: Number = 2; # Test redefinition checks.
+    var a = 2; # Test redefinition checks.
 else if (!(s == "String") && 2 + 2 >= 3)
     print("hi");
 else {
-    var a: Number = 1;
+    var a = 1;
     print(a);
 }
 
-var q: Number = 1;
+var q = 1;
 while (q % 5 != 0;)
     q += 3;
 print(q);

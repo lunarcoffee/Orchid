@@ -13,8 +13,8 @@ sealed class OrchidNode : Node {
 
     open class Statement : OrchidNode()
 
+    class VarDecl(val name: String, val value: Expression?, var type: Type? = null) : Statement()
     class Scope(val body: List<Statement>) : Statement()
-    class VarDecl(val name: String, val value: Expression?, val type: Type) : Statement()
     class Return(val value: Expression) : Statement()
     class ExternFunction(val func: FunctionDefinition) : Statement()
 

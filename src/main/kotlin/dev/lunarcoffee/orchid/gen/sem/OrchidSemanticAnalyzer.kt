@@ -2,6 +2,7 @@ package dev.lunarcoffee.orchid.gen.sem
 
 import dev.lunarcoffee.orchid.gen.sem.checker.*
 import dev.lunarcoffee.orchid.parser.OrchidNode
+import dev.lunarcoffee.orchid.util.exitWithMessage
 
 class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAnalyzer {
     private val symbols = SymbolTable()
@@ -22,9 +23,11 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     private fun functionDefinition(decl: OrchidNode.FunctionDefinition) {
         newScope {
-            for ((name, type) in decl.args)
-                symbols
-                    .addSymbol(OrchidSymbol.VarSymbol(OrchidNode.VarDecl(name, null, type), scope))
+            for ((name, type) in decl.args) {
+                val varDecl = OrchidNode.VarDecl(name, null).apply { this.type = type }
+                symbols.addSymbol(OrchidSymbol.VarSymbol(varDecl, scope))
+            }
+
             check { functionDefinition(decl) }
             for (statement in decl.body)
                 withFuncDef(decl) { statement(statement) }
@@ -48,8 +51,9 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
     }
 
     private fun variableDeclaration(stmt: OrchidNode.VarDecl) {
-        check { varDecl(stmt) }
-        symbols.addSymbol(OrchidSymbol.VarSymbol(stmt, scope))
+        val typed = stmt.apply { type = if (type == null) value?.exprType() else type }
+        check { varDecl(typed) }
+        symbols.addSymbol(OrchidSymbol.VarSymbol(typed, scope))
     }
 
     private fun returnStatement(stmt: OrchidNode.Return) {
@@ -126,6 +130,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
 
     private fun forEachStatement(stmt: OrchidNode.ForEachStatement) {
         newScope {
+            stmt.decl.type = stmt.expr.exprType().params!![0]
             variableDeclaration(stmt.decl)
             expression(stmt.expr)
             statement(stmt.body)
@@ -185,5 +190,21 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
         whenStmt = stmt
         analysis()
         whenStmt = null
+    }
+
+    private fun OrchidNode.Expression.exprType(): OrchidNode.Type {
+        return type ?: when (this) {
+            is OrchidNode.VarRef -> symbols[name]?.type
+            is OrchidNode.FunctionCall -> symbols[name]?.type
+            is OrchidNode.BinOp -> {
+                val typeLeft = left.exprType()
+                if (typeLeft != right.exprType())
+                    exitWithMessage("Semantic: binary operator operand types do not match!", 4)
+                typeLeft
+            }
+            is OrchidNode.UnaryOp -> operand.exprType()
+            is OrchidNode.Assignment -> value.exprType()
+            else -> exitWithMessage("Semantic: unexpected expression!", 4)
+        }!!
     }
 }

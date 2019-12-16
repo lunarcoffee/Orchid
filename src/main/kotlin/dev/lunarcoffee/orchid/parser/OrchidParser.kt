@@ -23,7 +23,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         return OrchidNode.Program(runnables, decls)
     }
 
-    private fun functionDefinition(noBody: Boolean = false): OrchidNode.FunctionDefinition {
+    private fun functionDefinition(): OrchidNode.FunctionDefinition {
         expectToken<OrchidToken.KFunc>()
         val name = scopedName(expectToken<OrchidToken.ID>().value)
         expectToken<OrchidToken.LParen>()
@@ -45,9 +45,6 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         expectToken<OrchidToken.Colon>()
 
         val returnType = type()
-        if (noBody)
-            return OrchidNode.FunctionDefinition(name, args, emptyList(), returnType)
-
         expectToken<OrchidToken.LBrace>()
 
         next = lexer.peek()
@@ -174,11 +171,18 @@ class OrchidParser(override val lexer: Lexer) : Parser {
     private fun variableDeclaration(): OrchidNode.VarDecl {
         expectToken<OrchidToken.KVar>()
         val name = expectToken<OrchidToken.ID>().value
-        expectToken<OrchidToken.Colon>()
-        val type = type()
+        val type = if (lexer.peek() == OrchidToken.Colon) {
+            expectToken<OrchidToken.Colon>()
+            type()
+        } else {
+            null
+        }
 
         return when (lexer.next()) {
-            OrchidToken.Terminator -> OrchidNode.VarDecl(name, null, type)
+            OrchidToken.Terminator -> if (type == null)
+                exitWithMessage("Syntax: type inferred variable must be initialized!", 2)
+            else
+                OrchidNode.VarDecl(name, null, type)
             OrchidToken.Equals -> {
                 val value = expression()
                 expectToken<OrchidToken.Terminator>()
@@ -277,19 +281,43 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         expectToken<OrchidToken.KForEach>()
 
         expectToken<OrchidToken.LParen>()
-        val decl = variableDeclaration()
+        expectToken<OrchidToken.KVar>()
+        val name = expectToken<OrchidToken.ID>().value
+        expectToken<OrchidToken.Terminator>()
+
         val arrExpr = expression()
         expectToken<OrchidToken.Terminator>()
         expectToken<OrchidToken.RParen>()
 
         val body = statement()
-        return OrchidNode.ForEachStatement(decl, arrExpr, body)
+        return OrchidNode.ForEachStatement(OrchidNode.VarDecl(name, arrExpr), arrExpr, body)
     }
 
     private fun externStatement(): OrchidNode.ExternFunction {
         expectToken<OrchidToken.KExtern>()
-        val func = functionDefinition(true)
+        expectToken<OrchidToken.KFunc>()
+
+        val name = scopedName(expectToken<OrchidToken.ID>().value)
+        expectToken<OrchidToken.LParen>()
+
+        var next = lexer.peek()
+        val args = mutableListOf<OrchidNode.Type>()
+
+        while (next != OrchidToken.RParen) {
+            args += type()
+            if (lexer.peek() == OrchidToken.RParen)
+                break
+            expectToken<OrchidToken.Comma>()
+            next = lexer.peek()
+        }
+        lexer.next()
+        expectToken<OrchidToken.Colon>()
+
+        val returnType = type()
         expectToken<OrchidToken.Terminator>()
+
+        val mapArgs = args.withIndex().associate { (index, arg) -> index.toString() to arg }
+        val func = OrchidNode.FunctionDefinition(name, mapArgs, emptyList(), returnType)
         return OrchidNode.ExternFunction(func)
     }
 

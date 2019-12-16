@@ -11,7 +11,7 @@ class NameChecker(override val symbols: SymbolTable) : Checker() {
             type.checkType()
     }
 
-    override fun varDecl(decl: OrchidNode.VarDecl) = decl.type.checkType()
+    override fun varDecl(decl: OrchidNode.VarDecl) = decl.type!!.checkType()
 
     override fun expression(expr: OrchidNode.Expression) = expr.exprType().checkType()
     override fun varRef(expr: OrchidNode.VarRef) = expr.name.checkName()
