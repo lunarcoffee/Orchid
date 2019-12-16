@@ -30,7 +30,8 @@ foreach (var d: Number; 3=.10;)
 
 # This is a comment!
 func print(msg: Any): Void {
-    js.console.log(msg);
+    extern func console.log(object: Any): Void;
+    console.log(msg);
 }
 
 func getNumArr(): Array<Number> {

@@ -15,7 +15,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         while (next != OrchidToken.EOF) {
             when (next) {
                 is OrchidToken.KVar -> runnables += variableDeclaration()
-                is OrchidToken.KFunc -> decls += functionDeclaration()
+                is OrchidToken.KFunc -> decls += functionDefinition()
                 else -> runnables += statement()
             }
             next = lexer.peek()
@@ -23,9 +23,9 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         return OrchidNode.Program(runnables, decls)
     }
 
-    private fun functionDeclaration(): OrchidNode.FunctionDefinition {
+    private fun functionDefinition(noBody: Boolean = false): OrchidNode.FunctionDefinition {
         expectToken<OrchidToken.KFunc>()
-        val name = expectToken<OrchidToken.ID>().value
+        val name = scopedName(expectToken<OrchidToken.ID>().value)
         expectToken<OrchidToken.LParen>()
 
         var next = lexer.peek()
@@ -45,6 +45,9 @@ class OrchidParser(override val lexer: Lexer) : Parser {
         expectToken<OrchidToken.Colon>()
 
         val returnType = type()
+        if (noBody)
+            return OrchidNode.FunctionDefinition(name, args, emptyList(), returnType)
+
         expectToken<OrchidToken.LBrace>()
 
         next = lexer.peek()
@@ -161,6 +164,7 @@ class OrchidParser(override val lexer: Lexer) : Parser {
             is OrchidToken.KWhen -> whenStatement()
             is OrchidToken.KFor -> forStatement()
             is OrchidToken.KForEach -> forEachStatement()
+            is OrchidToken.KExtern -> externStatement()
             is OrchidToken.KWhile -> whileStatement()
             is OrchidToken.LBrace -> scope()
             else -> expression().also { expectToken<OrchidToken.Terminator>() }
@@ -280,6 +284,13 @@ class OrchidParser(override val lexer: Lexer) : Parser {
 
         val body = statement()
         return OrchidNode.ForEachStatement(decl, arrExpr, body)
+    }
+
+    private fun externStatement(): OrchidNode.ExternFunction {
+        expectToken<OrchidToken.KExtern>()
+        val func = functionDefinition(true)
+        expectToken<OrchidToken.Terminator>()
+        return OrchidNode.ExternFunction(func)
     }
 
     private fun whileStatement(): OrchidNode.WhileStatement {

@@ -83,10 +83,10 @@ class TypeChecker(override val symbols: SymbolTable) : Checker() {
             exitNotMatching(expr.operand.exprType(), OrchidNode.Type.boolean)
     }
 
-    private fun exitNotMatching(t1: OrchidNode.Type?, t2: OrchidNode.Type?) {
-        if (t1 == null || t2 == null)
+    private fun exitNotMatching(given: OrchidNode.Type?, expected: OrchidNode.Type?) {
+        if (given == null || expected == null)
             exitWithMessage("Semantic: incorrect types!", 4)
-        if (t1 != OrchidNode.Type.any && t2 != OrchidNode.Type.any && t1 != t2)
-            exitWithMessage("Semantic: '$t1' does not match '$t2'!", 4)
+        if (expected != OrchidNode.Type.any && given != expected)
+            exitWithMessage("Semantic: '$given' does not match '$expected'!", 4)
     }
 }

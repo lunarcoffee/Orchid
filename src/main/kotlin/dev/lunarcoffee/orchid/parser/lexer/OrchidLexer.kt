@@ -137,6 +137,7 @@ class OrchidLexer(file: File) : Lexer {
             "for" to KFor,
             "foreach" to KForEach,
             "while" to KWhile,
+            "extern" to KExtern,
             "in" to In()
         )
     }

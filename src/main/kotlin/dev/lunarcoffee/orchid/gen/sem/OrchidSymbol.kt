@@ -17,7 +17,7 @@ sealed class OrchidSymbol(
         call: OrchidNode.FunctionDefinition,
         val args: List<OrchidNode.Type>,
         scope: Int
-    ) : OrchidSymbol(OrchidNode.ScopedName(call.name), call.returnType, scope)
+    ) : OrchidSymbol(call.name, call.returnType, scope)
 
     open class BuiltinSymbol(name: String) : OrchidSymbol(name, 0)
     object NumberType : BuiltinSymbol("Number")

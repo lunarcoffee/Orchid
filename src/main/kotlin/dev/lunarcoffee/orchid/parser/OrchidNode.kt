@@ -5,7 +5,7 @@ sealed class OrchidNode : Node {
 
     open class TopLevelDecl : OrchidNode()
     class FunctionDefinition(
-        val name: String,
+        val name: ScopedName,
         val args: Map<String, Type>,
         val body: List<Statement>,
         val returnType: Type
@@ -16,6 +16,8 @@ sealed class OrchidNode : Node {
     class Scope(val body: List<Statement>) : Statement()
     class VarDecl(val name: String, val value: Expression?, val type: Type) : Statement()
     class Return(val value: Expression) : Statement()
+    class ExternFunction(val func: FunctionDefinition) : Statement()
+
     class IfStatement(
         val condition: Expression,
         val body: Statement,

@@ -43,6 +43,7 @@ class OrchidSemanticAnalyzer(override val tree: OrchidNode.Program) : SemanticAn
             is OrchidNode.ForStatement -> forStatement(stmt)
             is OrchidNode.ForEachStatement -> forEachStatement(stmt)
             is OrchidNode.WhileStatement -> whileStatement(stmt)
+            is OrchidNode.ExternFunction -> functionDefinition(stmt.func)
         }
     }
 
